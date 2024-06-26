@@ -37,7 +37,7 @@ const ProjectCard = (props) => {
   const theme = useContext(ThemeContext);
   const parseBodyText = (text) => <ReactMarkdown children={text} />;
 
-  const { project } = props;
+  const { publications } = props;
 
   return (
     <Col>
@@ -49,16 +49,16 @@ const ProjectCard = (props) => {
         }}
         text={theme.bsSecondaryVariant}
       >
-        <Card.Img variant="top" src={project?.image} />
+        <Card.Img variant="top" src={publications?.image} />
         <Card.Body>
-          <Card.Title style={styles.cardTitleStyle}>{project.title}</Card.Title>
+          <Card.Title style={styles.cardTitleStyle}>{publications.title}</Card.Title>
           <Card.Text style={styles.cardTextStyle}>
-            {parseBodyText(project.bodyText)}
+            {parseBodyText(publications.bodyText)}
           </Card.Text>
         </Card.Body>
 
         <Card.Body>
-          {project?.links?.map((link) => (
+          {publications?.links?.map((link) => (
             <Button
               key={link.href}
               style={styles.buttonStyle}
@@ -69,9 +69,9 @@ const ProjectCard = (props) => {
             </Button>
           ))}
         </Card.Body>
-        {project.tags && (
+        {publications.tags && (
           <Card.Footer style={{ backgroundColor: theme.cardFooterBackground }}>
-            {project.tags.map((tag) => (
+            {publications.tags.map((tag) => (
               <Badge
                 key={tag}
                 pill
@@ -90,7 +90,7 @@ const ProjectCard = (props) => {
 };
 
 ProjectCard.propTypes = {
-  project: PropTypes.shape({
+  publications: PropTypes.shape({
     title: PropTypes.string.isRequired,
     bodyText: PropTypes.string.isRequired,
     image: PropTypes.string,

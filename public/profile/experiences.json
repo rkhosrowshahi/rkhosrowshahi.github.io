@@ -1,33 +1,33 @@
 {
     "experiences": [
         {
-            "title": "Software Engineer",
-            "subtitle": "XYZ Ltd",
+            "title": "AI/ML Research Assistant",
+            "subtitle": "NICI lab @ Brock University",
             "workType": "Full-time",
             "workDescription": [
-                "Integrated **2** new product.",
-                "Worked on adding **def** to **bcd**. Improved speed by 50%."
+                "Researching on neural network dimension reduction by **1000x** times smaller and memory cost efficiency by **5x**.",
+                "Researching on gradient-free neural network training/fine-tuning.",
+                "Researching on multi-objective encoder/decoder models."
             ],
-            "dateText": "06/20XX – Present"
+            "dateText": "01/2024 – Present"
         },
         {
-            "title": "Software Engineer",
-            "subtitle": "XYZ Ltd",
+            "title": "AI/ML Research Assistant",
+            "subtitle": "NICI lab @ Ontario Tech University",
+            "workType": "Full-time",
+            "workDescription": [
+                "Researched on large-scale global optimization problems and center-based sampling using meta-heuristic algorithms."
+            ],
+            "dateText": "10/2021 – 10/2023"
+        },
+        {
+            "title": "Machine Learning Intern",
+            "subtitle": "FaraDars",
             "workType": "Internship",
             "workDescription": [
-                "Worked on abc."
+                "Implemented the machine learning engineering simulation tools deployed on web."
             ],
-            "dateText": "01/20XX – 05/20XX"
-        },
-        {
-            "title": "App Developer",
-            "subtitle": "ABC Pvt Ltd",
-            "workType": "Freelance",
-            "workDescription": [
-                "Developed the official apps for the startup for both Android and iOS using hybrid framework.",
-                "Done bcd work."
-            ],
-            "dateText": "09/20XX – 01/20YY"
+            "dateText": "09/2020 – 06/2020"
         }
     ]
 }

@@ -1,9 +1,9 @@
 {
-  "short_name": "Mayank Agarwal",
-  "name": "Mayank Agarwal - Portfolio",
+  "short_name": "Rasa Khosrowshahi",
+  "name": "Rasa Khosrowshahi - Portfolio",
   "icons": [
     {
-      "src": "images/logo.png",
+      "src": "images/nn_logo.png",
       "type": "image/png",
       "sizes": "425x225"
     }

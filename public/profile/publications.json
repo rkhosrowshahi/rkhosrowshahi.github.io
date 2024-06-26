@@ -1,0 +1,56 @@
+{
+    "publications" : [
+        {
+            "image" : "images/projects/BlockedPlot.png",
+            "title": "Block Differential Evolution",
+            "bodyText": "Khosrowshahli, Rasa, and Shahryar Rahnamayan",
+            "links": [
+                {
+                    "text": "Scholar",
+                    "href": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:2osOgNQ5qMEC"
+                }
+            ],
+            "tags" : [
+                "LSGO",
+                "Differential Evolution",
+                "CEC 2023"
+            ]
+        },
+        {
+            "image" : "images/projects/cbde.png",
+            "title": "Clustering Center-based Differential Evolution",
+            "bodyText": "Khosrowshahli, R., Rahnamayan, S., and Bidgoli, A. A.",
+            "links": [
+                {
+                    "text": "GitHub",
+                    "href": "https://github.com/rkhosrowshahi/CCDE-WCCI2022"
+                },
+                {
+                    "text": "Scholar",
+                    "href": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:9yKSN-GCB0IC&gmla=AOAOcb15cVHUVWdiiZ5jB_nF_KoQFcYtZmw5MsMSiOZMlI6C6om6VF9i00BhTzfBJeXGgiezISSjElW8EHSV7Vqk&sciund=14993248052794626961"
+                }
+            ],
+            "tags" : [
+                "Center-based Sampling",
+                "Differential Evolution",
+                "CEC 2022"
+            ]
+        },
+        {
+            "image" : "images/projects/rcnsga2.png",
+            "title": "Ranking Center-based NSGA-II",
+            "bodyText": "Khosrowshahli, R., Rahnamayan, S., Ibrahim, A. and Makrehchi, M.",
+            "links": [
+                {
+                    "text": "Scholar",
+                    "href": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:u-x6o8ySG0sC"
+                }
+            ],
+            "tags" : [
+                "Center-based Sampling",
+                "NSGA-II",
+                "SMC 2023"
+            ]
+        }
+    ]
+}

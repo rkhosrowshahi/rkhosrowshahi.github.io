@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Fade from 'react-reveal/Fade';
 import Header from './Header';
 import endpoints from '../constants/endpoints';
-import ProjectCard from './projects/ProjectCard';
+import ProjectCard from './publications/ProjectCard';
 import FallbackSpinner from './FallbackSpinner';
 
 const styles = {
@@ -17,21 +17,24 @@ const styles = {
   },
 };
 
-const Projects = (props) => {
+const Publications = (props) => {
   const theme = useContext(ThemeContext);
   const { header } = props;
   const [data, setData] = useState(null);
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
-    fetch(endpoints.projects, {
+    fetch(endpoints.publications, {
       method: 'GET',
     })
       .then((res) => res.json())
-      .then((res) => setData(res))
+      .then((res) => {
+        setShowMore(res.publications.length >= 3);
+        setData(res);
+      })
       .catch((err) => err);
   }, []);
-  const numberOfItems = showMore && data ? data.length : 6;
+  const numberOfItems = showMore && data ? data.publications.length : 3;
   return (
     <>
       <Header title={header} />
@@ -40,9 +43,9 @@ const Projects = (props) => {
           <div className="section-content-container">
             <Container style={styles.containerStyle}>
               <Row xs={1} sm={1} md={2} lg={3} className="g-4">
-                {data.projects?.slice(0, numberOfItems).map((project) => (
-                  <Fade key={project.title}>
-                    <ProjectCard project={project} />
+                {data.publications?.slice(0, numberOfItems).map((publications) => (
+                  <Fade key={publications.title}>
+                    <ProjectCard publications={publications} />
                   </Fade>
                 ))}
               </Row>
@@ -64,8 +67,8 @@ const Projects = (props) => {
   );
 };
 
-Projects.propTypes = {
+Publications.propTypes = {
   header: PropTypes.string.isRequired,
 };
 
-export default Projects;
+export default Publications;
