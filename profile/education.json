@@ -1,19 +1,22 @@
 {
     "education":[
         {
-            "title": "Jun 20XX - Jun 20YY",
-            "cardTitle": "B.Tech, Computer Science",
-            "cardSubtitle":"XYZ University, City",
-            "cardDetailedText": "CGPA - 9.5",
+            "title": "Jan 2024 - Present",
+            "cardTitle": "Ph.D., Computer Science",
+            "cardSubtitle":"Brcok University, St. Catharines, ON, Canada",
+            "cardDetailedText": "CGPA - A+",
             "icon" : {
-                "src": "images/education/lorem-ipsum.png"
+                "src": "images/education/brock.png"
             }
         },
         {
-            "title": "Apr 20XX",
-            "cardTitle": "High School",
-            "cardSubtitle":"ABC School, City",
-            "cardDetailedText": "Marks - 95%"
+            "title": "Sep 2022 - Oct 2023",
+            "cardTitle": "M.Sc., Computer Engineering",
+            "cardSubtitle":"Ontario Tech University, Oshawa, ON, Canada",
+            "cardDetailedText": "GPA - A+",
+            "icon" : {
+                "src": "images/education/otu.png"
+            }
         }
     ]
 }

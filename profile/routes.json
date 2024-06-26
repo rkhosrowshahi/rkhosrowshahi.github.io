@@ -21,9 +21,9 @@
             "headerTitle": "Experience"
         },
         {
-            "component": "Projects",
-            "path": "/projects",
-            "headerTitle": "Projects"
+            "component": "Publications",
+            "path": "/publications",
+            "headerTitle": "Publications"
         }
     ]
 }

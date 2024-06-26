@@ -1,4 +1,9 @@
-{
-    "name": "Your Name",
-    "roles": ["a Developer", "a Freelancer"]
+{   
+    "personal" : {
+        "source": "images/personal.jpg",
+        "height" : 300,
+        "width" : 300
+    },
+    "name": "Rasa Khosrowshahi",
+    "roles": ["ML/AI Researcher"]
 }

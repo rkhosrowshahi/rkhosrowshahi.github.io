@@ -1,7 +1,7 @@
 {
     "logo" : {
-        "source": "images/logo.png",
-        "height" : 45,
+        "source": "images/nn_logo.png",
+        "height" : 50,
         "width" : 50
     },
     "sections": [
@@ -26,12 +26,13 @@
             "href": "/experience"
         },
         {
-            "title": "Projects",
-            "href": "/projects"
-        },
+            "title": "Publications",
+            "href": "/publications"
+        }
+        ,
         {
             "title": "Resume",
-            "href": "https://drive.google.com/file/d/13kaPsdMNDsM4LV9g7m5-E5PTildp-yYf/view?usp=sharing",
+            "href": "",
             "type": "link"
         }
     ]
