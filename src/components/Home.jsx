@@ -51,17 +51,22 @@ function Home() {
           }
         />
         <h1 style={styles.nameStyle}>{data?.name}</h1>
-        <div style={{ flexDirection: 'row' }}>
-          <h2>{data?.roles}</h2>
-          {/* <h2 style={styles.inlineChild}>I&apos;m&nbsp;</h2> */}
-          {/* <Typewriter
-            options={{
-              loop: false,
-              autoStart: true,
-              strings: data?.roles,
-            }} */}
-          {/* /> */}
+        <div style={{ display: 'inline-block' }}>
+          {/* <p>{data?.roles}</p> */}
+          {data?.roles.map((item) => (
+            <p>{item}</p>
+          ))}
         </div>
+        {/* <div style={{ flexDirection: 'row' }}> */}
+        {/* <h2 style={styles.inlineChild}>I&apos;m&nbsp;</h2> */}
+        {/* <Typewriter
+          options={{
+            loop: false,
+            autoStart: true,
+            strings: data?.roles,
+          }} */}
+        {/* /> */}
+        {/* </div> */}
         <Social />
       </div>
     </Fade>
