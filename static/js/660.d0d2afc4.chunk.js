@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkrkhosrowshahi_github_io=self.webpackChunkrkhosrowshahi_github_io||[]).push([[660],{7660:(s,h,e)=>{e.r(h),e.d(h,{default:()=>r});e(5043),e(4050);var i=e(579);const r=function(s){const{title:h}=s;return(0,i.jsx)("div",{className:"header",children:h})}}}]);
+//# sourceMappingURL=660.d0d2afc4.chunk.js.map
