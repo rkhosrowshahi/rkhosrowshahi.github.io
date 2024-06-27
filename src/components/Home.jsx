@@ -1,29 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // import Typewriter from 'typewriter-effect';
-import Fade from 'react-reveal';
 import endpoints from '../constants/endpoints';
 import Social from './Social';
 import FallbackSpinner from './FallbackSpinner';
-
-const styles = {
-  imgStyle: {
-    width: 300,
-    height: 300,
-  },
-  nameStyle: {
-    fontSize: '5em',
-  },
-  inlineChild: {
-    display: 'inline-block',
-  },
-  mainContainer: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-};
+import '../css/home.css';
 
 function Home() {
   const [data, setData] = useState(null);
@@ -38,38 +18,20 @@ function Home() {
   }, []);
 
   return data ? (
-    <Fade>
-      <div style={styles.mainContainer}>
-        <img
-          src={data?.personal?.source}
-          className="d-inline-block align-top"
-          alt="main logo"
-          style={
-            data?.personal?.height && data?.personal?.width
-              ? { height: data?.personal?.height, width: data?.personal?.width }
-              : styles.logoStyle
-          }
-        />
-        <h1 style={styles.nameStyle}>{data?.name}</h1>
-        <div style={{ display: 'inline-block' }}>
-          {/* <p>{data?.roles}</p> */}
-          {data?.roles.map((item) => (
-            <p>{item}</p>
-          ))}
-        </div>
-        {/* <div style={{ flexDirection: 'row' }}> */}
-        {/* <h2 style={styles.inlineChild}>I&apos;m&nbsp;</h2> */}
-        {/* <Typewriter
-          options={{
-            loop: false,
-            autoStart: true,
-            strings: data?.roles,
-          }} */}
-        {/* /> */}
-        {/* </div> */}
-        <Social />
+    <div className="main_container">
+      <h1 className="name_style">{data?.name}</h1>
+      <img
+        src={data?.personal?.source}
+        alt=""
+        className="rounded"
+      />
+      <div className="inline_child">
+        {data?.roles.map((item) => (
+          <p key={Math.random()}>{item}</p>
+        ))}
       </div>
-    </Fade>
+      <Social />
+    </div>
   ) : <FallbackSpinner />;
 }
 

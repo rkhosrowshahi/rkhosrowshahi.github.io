@@ -10,12 +10,8 @@
             "href": "/"
         },
         {
-            "title": "About",
-            "href": "/about"
-        },
-        {
-            "title": "Skills",
-            "href": "/skills"
+            "title": "Publications",
+            "href": "/publications"
         },
         {
             "title": "Education",
@@ -26,13 +22,12 @@
             "href": "/experience"
         },
         {
-            "title": "Publications",
-            "href": "/publications"
-        }
-        ,
+            "title": "Skills",
+            "href": "/skills"
+        },
         {
-            "title": "Resume",
-            "href": "",
+            "title": "CV",
+            "href": "https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing",
             "type": "link"
         }
     ]

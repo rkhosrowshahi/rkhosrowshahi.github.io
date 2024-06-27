@@ -12,6 +12,15 @@
             "dateText": "01/2024 – Present"
         },
         {
+            "title": "Teaching Assistant",
+            "subtitle": "Brock University",
+            "workType": "Contract",
+            "workDescription": [
+                "COSC 1P03, Data Structures (Winter 2024)"
+            ],
+            "dateText": "01/2024 – Present"
+        },
+        {
             "title": "AI/ML Research Assistant",
             "subtitle": "NICI lab @ Ontario Tech University",
             "workType": "Full-time",
@@ -21,13 +30,25 @@
             "dateText": "10/2021 – 10/2023"
         },
         {
+            "title": "Teaching Assistant",
+            "subtitle": "Ontario Tech University",
+            "workType": "Contract",
+            "workDescription": [
+                "Machine Learning and Data Mining (Winter 2023)",
+                "Designing Algorithms (Fall 2022)",
+                "Object-Oriented Programming (Fall 2022, Fall 2023)",
+                "Principles of Software and Requirements Engineering (Winter 2023)"
+            ],
+            "dateText": "09/2022 – 12/2023"
+        },
+        {
             "title": "Machine Learning Intern",
             "subtitle": "FaraDars",
             "workType": "Internship",
             "workDescription": [
                 "Implemented the machine learning engineering simulation tools deployed on web."
             ],
-            "dateText": "09/2020 – 06/2020"
+            "dateText": "06/2020 – 09/2020"
         }
     ]
 }

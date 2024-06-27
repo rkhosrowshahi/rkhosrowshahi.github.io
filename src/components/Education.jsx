@@ -51,7 +51,7 @@ function Education(props) {
                 allowDynamicUpdate
                 useReadMore={false}
                 items={data.education}
-                cardHeight={250}
+                cardHeight={100}
                 mode={mode}
                 theme={{
                   primary: theme.accentColor,
@@ -64,6 +64,7 @@ function Education(props) {
                 <div className="chrono-icons">
                   {data.education.map((education) => (education.icon ? (
                     <img
+                      className="uni_logo"
                       key={education.icon.src}
                       src={education.icon.src}
                       alt={education.icon.alt}

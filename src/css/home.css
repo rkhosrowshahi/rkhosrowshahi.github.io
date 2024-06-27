@@ -1,0 +1,46 @@
+@media only screen and (max-width: 480px){
+    img {
+      width: 50%;
+      height: auto;
+    }
+}
+
+@media only screen and (min-width: 480px){
+    img {
+      height: 25%;
+    }
+}
+
+
+
+.rounded {
+    padding: 10px;
+    vertical-align: middle;
+    border-style: none;
+    border-radius: 1rem !important;
+}
+
+
+.name_style {
+    padding-top: 20px;
+    font-size: 3em;
+}
+
+.inline_child {
+    display: 'inline-block';
+}
+
+.main_container {
+    height: '100%';
+    display: 'flex';
+    flex-direction: 'column';
+    justify-content: 'center';
+    align-items: 'center';
+    padding-left: 20px;
+}
+
+p {
+    font-size: 1em;
+    padding-left: 50px;
+    padding-right: 50px;
+}

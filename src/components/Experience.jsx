@@ -47,7 +47,6 @@ function Experience(props) {
   return (
     <>
       <Header title={header} />
-
       {data
         ? (
           <div className="section-content-container">
@@ -90,7 +89,6 @@ function Experience(props) {
                                 }}
                               />
                             </li>
-                            <br />
                           </div>
                         ))}
                       </ul>
