@@ -2,21 +2,27 @@
     "education":[
         {
             "title": "Jan 2024 - Present",
-            "cardTitle": "Ph.D., Computer Science",
-            "cardSubtitle":"Brcok University, St. Catharines, ON, Canada",
-            "cardDetailedText": "CGPA - A+",
+            "cardTitle": "PhD, Computer Science",
+            "cardSubtitle":"Brock University",
+            "cardDetailedText": "St. Catharines, ON, Canada",
             "icon" : {
                 "src": "images/education/brock.png"
             }
         },
         {
             "title": "Sep 2022 - Oct 2023",
-            "cardTitle": "M.Sc., Computer Engineering",
-            "cardSubtitle":"Ontario Tech University, Oshawa, ON, Canada",
-            "cardDetailedText": "GPA - A+",
+            "cardTitle": "MSc, Computer Engineering",
+            "cardSubtitle":"Ontario Tech University",
+            "cardDetailedText": "Oshawa, ON, Canada",
             "icon" : {
-                "src": "images/education/otu.png"
+                "src": "images/education/otu-sm.png"
             }
+        },
+        {
+            "title": "Sep 2017 - Sep 2021",
+            "cardTitle": "BSc, Computer Engineering",
+            "cardSubtitle":"University of Tabriz",
+            "cardDetailedText": ""
         }
     ]
 }

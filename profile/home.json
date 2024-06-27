@@ -5,6 +5,7 @@
         "width" : 300
     },
     "name": "Rasa Khosrowshahi",
-    "roles": ["I am ML/AI researcher at NICI lab and PhD student at Brock University. My recent focus in research is large-scale single- and multi-objective gradient-free neural network training and memory reduction. ", 
-             "Previously, my research focus was enhancing population-based algorithms to solve large-scale global optimization and black box optimization problems. I obtained my MSc in Electrical and Computer engineering at Ontario Tech University in one academic year, advised by Prof. Shahryar Rahnamayan and Prof. Masoud Makrehchi. ", "I have published and reviewed papers at CEC, SSCI, SMC, and CCECE conferences."]
+    "roles": ["I am an ML/AI researcher at the NICI lab and a PhD student at Brock University. My current research focuses on large-scale single- and multi-objective gradient-free neural network training and memory reduction. ", 
+             "Previously, I concentrated on enhancing population-based algorithms to address large-scale global optimization and black-box optimization problems. I earned my MSc in Electrical and Computer Engineering from Ontario Tech University in just one academic year, under the guidance of Prof. Shahryar Rahnamayan and Prof. Masoud Makrehchi.",
+             "I have published and reviewed papers for several prominent conferences, including CEC, SSCI, SMC, and CCECE."]
 }
