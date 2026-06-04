@@ -4,11 +4,42 @@ set -euo pipefail
 tmp_dir="$(mktemp -d)"
 tmp_override="${tmp_dir}/comments-test-override.yml"
 tmp_site="${tmp_dir}/site"
+giscus_post="_posts/2022-12-10-giscus-comments.md"
+disqus_post="_posts/2015-10-20-disqus-comments.md"
 
 cleanup() {
   rm -rf "${tmp_dir}"
+  rm -f "${giscus_post}" "${disqus_post}"
 }
 trap cleanup EXIT
+
+cat >"${giscus_post}" <<'MARKDOWN'
+---
+layout: post
+title: Giscus comments
+date: 2022-12-10 00:00:00
+description: Test post for Giscus comments integration.
+tags: comments
+categories: sample-posts
+giscus_comments: true
+---
+
+This post verifies that Giscus comments render when the site is configured for them.
+MARKDOWN
+
+cat >"${disqus_post}" <<'MARKDOWN'
+---
+layout: post
+title: Disqus comments
+date: 2015-10-20 00:00:00
+description: Test post for Disqus comments integration.
+tags: comments
+categories: sample-posts
+disqus_comments: true
+---
+
+This post verifies that Disqus comments render when the site is configured for them.
+MARKDOWN
 
 cat >"${tmp_override}" <<'YAML'
 giscus:

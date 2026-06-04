@@ -4,11 +4,45 @@ set -euo pipefail
 tmp_dir="$(mktemp -d)"
 tmp_override="${tmp_dir}/distill-override.yml"
 tmp_site="${tmp_dir}/site"
+distill_post="_posts/2021-05-22-distill.md"
 
 cleanup() {
   rm -rf "${tmp_dir}"
+  rm -f "${distill_post}"
 }
 trap cleanup EXIT
+
+cat >"${distill_post}" <<'MARKDOWN'
+---
+layout: distill
+title: Distill
+description: Test post for Distill integration.
+tags: distill formatting
+giscus_comments: true
+date: 2021-05-22
+mermaid:
+  enabled: true
+  zoomable: true
+tikzjax: true
+---
+
+This post verifies that Distill pages render with their bundled runtime assets.
+
+## Mermaid
+
+```mermaid
+graph TD;
+    A-->B;
+```
+
+## TikZ
+
+<script type="text/tikz">
+  \begin{tikzpicture}
+    \draw (0,0) circle (1);
+  \end{tikzpicture}
+</script>
+MARKDOWN
 
 cat >"${tmp_override}" <<'YAML'
 giscus:
