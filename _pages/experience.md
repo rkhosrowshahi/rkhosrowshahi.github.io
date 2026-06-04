@@ -4,7 +4,7 @@ permalink: /experience/
 title: experience
 description: Research, teaching, and industry experience.
 nav: true
-nav_order: 6
+nav_order: 4
 ---
 
 ## Research Experience

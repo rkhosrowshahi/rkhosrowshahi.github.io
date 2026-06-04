@@ -4,7 +4,7 @@ permalink: /teaching/
 title: teaching
 description: Teaching assistantships and course support.
 nav: true
-nav_order: 5
+nav_order: 8
 ---
 
 I have taught and supported undergraduate and graduate courses in computer science, software engineering, and engineering design.

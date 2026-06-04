@@ -4,7 +4,7 @@ title: projects
 permalink: /projects/
 description: Research projects in machine learning and optimization.
 nav: true
-nav_order: 4
+nav_order: 5
 display_categories: [research]
 horizontal: false
 ---

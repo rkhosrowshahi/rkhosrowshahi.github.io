@@ -1,12 +1,21 @@
 ---
-layout: cv
+layout: page
 permalink: /cv/
-title: CV
+title: cv
 nav: true
-nav_order: 9
-cv_pdf: https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing
-cv_format: rendercv
+nav_order: 3
 description: Academic CV and professional experience.
-toc:
-  sidebar: left
 ---
+
+<!-- markdownlint-disable MD033 -->
+<div style="width: 100%; min-height: 720px; height: 85vh;">
+  <iframe
+    src="https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/preview"
+    title="cv"
+    width="100%"
+    height="100%"
+    style="border: 0;"
+    allow="autoplay"
+  ></iframe>
+</div>
+<!-- markdownlint-enable MD033 -->

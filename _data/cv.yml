@@ -1,10 +1,7 @@
 cv:
   name: Rasa Khosrowshahi
-  label: PhD Student in Computer Science
   email: rkhosrowshahli@brocku.ca
   location: St. Catharines, ON, Canada
-  image: assets/img/prof_pic.jpg
-  summary: PhD student researching AI/ML, gradient-free neural network training, memory reduction, and large-scale optimization.
 
   social_networks:
     - network: GitHub
@@ -17,20 +14,20 @@ cv:
       - institution: Brock University
         location: St. Catharines, ON<br>Canada
         area: Computer Science
-        studyType: PhD
+        degree: PhD
         start_date: 2024-01
         end_date: present
 
       - institution: Ontario Tech University
         location: Oshawa, ON<br>Canada
         area: Computer Engineering
-        studyType: MSc
+        degree: MSc
         start_date: 2022-09
         end_date: 2023-10
 
       - institution: University of Tabriz
         area: Computer Engineering
-        studyType: BSc
+        degree: BSc
         start_date: 2017-09
         end_date: 2021-09
 
@@ -84,7 +81,7 @@ cv:
         authors:
           - Rasa Khosrowshahli
           - Shahryar Rahnamayan
-        releaseDate: 2023
+        date: "2023"
         url: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:2osOgNQ5qMEC
         summary: Research on differential evolution for large-scale global optimization.
 
@@ -93,7 +90,7 @@ cv:
           - R. Khosrowshahli
           - S. Rahnamayan
           - A. A. Bidgoli
-        releaseDate: 2022
+        date: "2022"
         url: https://github.com/rkhosrowshahi/CCDE-WCCI2022
         summary: Center-based sampling approach for differential evolution.
 
@@ -103,13 +100,13 @@ cv:
           - S. Rahnamayan
           - A. Ibrahim
           - M. Makrehchi
-        releaseDate: 2023
+        date: "2023"
         summary: Center-based sampling approach for multi-objective optimization with NSGA-II.
 
     Skills:
-      - name: Languages and Databases
-        keywords: Java, PHP, JavaScript, Python, MySQL
-      - name: Frameworks and Technologies
-        keywords: Android, React, Node.js
-      - name: Tools and Platforms
-        keywords: Android Studio, Git, Docker
+      - label: Languages and Databases
+        details: Java, PHP, JavaScript, Python, MySQL
+      - label: Frameworks and Technologies
+        details: Android, React, Node.js
+      - label: Tools and Platforms
+        details: Android Studio, Git, Docker
