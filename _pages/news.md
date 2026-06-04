@@ -19,7 +19,9 @@ nav_order: 9
 {% endif %}
 
 {% unless forloop.last %}
-***
+
+---
+
 {% endunless %}
 {% endfor %}
 {% else %}
