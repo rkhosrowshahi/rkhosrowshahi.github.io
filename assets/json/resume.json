@@ -1,0 +1,121 @@
+{
+  "basics": {
+    "name": "Rasa Khosrowshahi",
+    "label": "PhD Student in Computer Science",
+    "email": "rkhosrowshahli@brocku.ca",
+    "url": "https://rkhosrowshahi.github.io",
+    "summary": "PhD student researching AI/ML, gradient-free neural network training, memory reduction, and large-scale optimization.",
+    "location": {
+      "city": "St. Catharines",
+      "region": "ON",
+      "countryCode": "CA"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "rkhosrowshahi",
+        "url": "https://github.com/rkhosrowshahi"
+      },
+      {
+        "network": "LinkedIn",
+        "username": "rasa-khosrowshahi",
+        "url": "https://linkedin.com/in/rasa-khosrowshahi/"
+      },
+      {
+        "network": "Google Scholar",
+        "username": "Rasa Khosrowshahi",
+        "url": "https://scholar.google.com/citations?user=yvSevxQAAAAJ"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "NICI Lab, Brock University",
+      "position": "AI/ML Research Assistant",
+      "startDate": "2024-01",
+      "summary": "Researching AI/ML, neural network memory reduction, gradient-free training, and multi-objective encoder/decoder models."
+    },
+    {
+      "name": "Brock University",
+      "position": "Teaching Assistant",
+      "startDate": "2024-01",
+      "summary": "COSC 1P03, Data Structures."
+    },
+    {
+      "name": "NICI Lab, Ontario Tech University",
+      "position": "AI/ML Research Assistant",
+      "startDate": "2021-10",
+      "endDate": "2023-10",
+      "summary": "Researched large-scale global optimization and center-based sampling using meta-heuristic algorithms."
+    },
+    {
+      "name": "Ontario Tech University",
+      "position": "Teaching Assistant",
+      "startDate": "2022-09",
+      "endDate": "2023-12",
+      "summary": "Supported courses in machine learning, algorithms, object-oriented programming, and software requirements engineering."
+    },
+    {
+      "name": "FaraDars",
+      "position": "Machine Learning Intern",
+      "startDate": "2020-06",
+      "endDate": "2020-09",
+      "summary": "Implemented machine learning engineering simulation tools deployed on the web."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Brock University",
+      "area": "Computer Science",
+      "studyType": "PhD",
+      "startDate": "2024-01"
+    },
+    {
+      "institution": "Ontario Tech University",
+      "area": "Computer Engineering",
+      "studyType": "MSc",
+      "startDate": "2022-09",
+      "endDate": "2023-10"
+    },
+    {
+      "institution": "University of Tabriz",
+      "area": "Computer Engineering",
+      "studyType": "BSc",
+      "startDate": "2017-09",
+      "endDate": "2021-09"
+    }
+  ],
+  "publications": [
+    {
+      "name": "Block Differential Evolution",
+      "publisher": "CEC",
+      "releaseDate": "2023",
+      "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:2osOgNQ5qMEC"
+    },
+    {
+      "name": "Clustering Center-based Differential Evolution",
+      "publisher": "WCCI/CEC",
+      "releaseDate": "2022",
+      "url": "https://github.com/rkhosrowshahi/CCDE-WCCI2022"
+    },
+    {
+      "name": "Ranking Center-based NSGA-II",
+      "publisher": "SMC",
+      "releaseDate": "2023"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Languages and Databases",
+      "keywords": ["Java", "PHP", "JavaScript", "Python", "MySQL"]
+    },
+    {
+      "name": "Frameworks and Technologies",
+      "keywords": ["Android", "React", "Node.js"]
+    },
+    {
+      "name": "Tools and Platforms",
+      "keywords": ["Android Studio", "Git", "Docker"]
+    }
+  ]
+}

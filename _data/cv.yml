@@ -1,0 +1,115 @@
+cv:
+  name: Rasa Khosrowshahi
+  label: PhD Student in Computer Science
+  email: rkhosrowshahli@brocku.ca
+  location: St. Catharines, ON, Canada
+  image: assets/img/prof_pic.jpg
+  summary: PhD student researching AI/ML, gradient-free neural network training, memory reduction, and large-scale optimization.
+
+  social_networks:
+    - network: GitHub
+      username: rkhosrowshahi
+    - network: LinkedIn
+      username: rasa-khosrowshahi
+
+  sections:
+    Education:
+      - institution: Brock University
+        location: St. Catharines, ON<br>Canada
+        area: Computer Science
+        studyType: PhD
+        start_date: 2024-01
+        end_date: present
+
+      - institution: Ontario Tech University
+        location: Oshawa, ON<br>Canada
+        area: Computer Engineering
+        studyType: MSc
+        start_date: 2022-09
+        end_date: 2023-10
+
+      - institution: University of Tabriz
+        area: Computer Engineering
+        studyType: BSc
+        start_date: 2017-09
+        end_date: 2021-09
+
+    Experience:
+      - company: NICI Lab, Brock University
+        position: AI/ML Research Assistant
+        location: St. Catharines, ON<br>Canada
+        start_date: 2024-01
+        end_date: present
+        highlights:
+          - Researching neural network dimension reduction with models up to 1000x smaller and memory cost reductions up to 5x.
+          - Researching gradient-free neural network training and fine-tuning.
+          - Researching multi-objective encoder/decoder models.
+
+      - company: Brock University
+        position: Teaching Assistant
+        location: St. Catharines, ON<br>Canada
+        start_date: 2024-01
+        end_date: present
+        highlights:
+          - COSC 1P03, Data Structures (Winter 2024).
+
+      - company: NICI Lab, Ontario Tech University
+        position: AI/ML Research Assistant
+        location: Oshawa, ON<br>Canada
+        start_date: 2021-10
+        end_date: 2023-10
+        highlights:
+          - Researched large-scale global optimization problems and center-based sampling with meta-heuristic algorithms.
+
+      - company: Ontario Tech University
+        position: Teaching Assistant
+        location: Oshawa, ON<br>Canada
+        start_date: 2022-09
+        end_date: 2023-12
+        highlights:
+          - Machine Learning and Data Mining (Winter 2023).
+          - Designing Algorithms (Fall 2022).
+          - Object-Oriented Programming (Fall 2022, Fall 2023).
+          - Principles of Software and Requirements Engineering (Winter 2023).
+
+      - company: FaraDars
+        position: Machine Learning Intern
+        start_date: 2020-06
+        end_date: 2020-09
+        highlights:
+          - Implemented machine learning engineering simulation tools deployed on the web.
+
+    Publications:
+      - title: Block Differential Evolution
+        authors:
+          - Rasa Khosrowshahli
+          - Shahryar Rahnamayan
+        releaseDate: 2023
+        url: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=yvSevxQAAAAJ&citation_for_view=yvSevxQAAAAJ:2osOgNQ5qMEC
+        summary: Research on differential evolution for large-scale global optimization.
+
+      - title: Clustering Center-based Differential Evolution
+        authors:
+          - R. Khosrowshahli
+          - S. Rahnamayan
+          - A. A. Bidgoli
+        releaseDate: 2022
+        url: https://github.com/rkhosrowshahi/CCDE-WCCI2022
+        summary: Center-based sampling approach for differential evolution.
+
+      - title: Ranking Center-based NSGA-II
+        authors:
+          - R. Khosrowshahli
+          - S. Rahnamayan
+          - A. Ibrahim
+          - M. Makrehchi
+        releaseDate: 2023
+        summary: Center-based sampling approach for multi-objective optimization with NSGA-II.
+
+    Skills:
+      - name: Languages and Databases
+        keywords: Java, PHP, JavaScript, Python, MySQL
+      - name: Frameworks and Technologies
+        keywords: Android, React, Node.js
+      - name: Tools and Platforms
+        keywords: Android Studio, Git, Docker
