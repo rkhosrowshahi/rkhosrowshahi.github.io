@@ -11,9 +11,17 @@ profile:
   image: prof_pic.jpg
   image_circular: false
   more_info: >
+    <div class="profile-social-links" style="display: flex; flex-wrap: wrap; gap: 0.55rem; justify-content: center; margin-top: 0.9rem;">
+      <a href="mailto:rkhosrowshahli@brocku.ca" aria-label="Email" title="Email" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="fa-solid fa-envelope"></i></a>
+      <a href="https://scholar.google.com/citations?user=yvSevxQAAAAJ" aria-label="Google Scholar" title="Google Scholar" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="ai ai-google-scholar"></i></a>
+      <a href="https://github.com/rkhosrowshahi" aria-label="GitHub" title="GitHub" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="fa-brands fa-github"></i></a>
+      <a href="https://www.linkedin.com/in/rasa-khosrowshahi" aria-label="LinkedIn" title="LinkedIn" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="fa-brands fa-linkedin"></i></a>
+      <a href="https://x.com/rkhosrowshahli" aria-label="X" title="X" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="fa-brands fa-x-twitter"></i></a>
+      <a href="https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing" aria-label="CV" title="CV" style="align-items: center; color: var(--global-text-color); display: inline-flex; font-size: 1.45rem; height: 2rem; justify-content: center; width: 2rem;"><i class="ai ai-cv"></i></a>
+    </div>
 
-selected_papers: true
-social: true
+selected_papers: false
+social: false
 
 announcements:
   enabled: false
