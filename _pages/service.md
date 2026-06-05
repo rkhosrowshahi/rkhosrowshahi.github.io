@@ -30,7 +30,7 @@ nav_order: 7
 - Mentor for undergraduate research projects:
   - Chris Ortiz, undergraduate, Brock University.
   - Khush Patel, graduated, Brock University.
-- Lab manager for Prof. Beatrice Ombuki-Berman, supporting a research group with over 10 undergraduate, master's, and PhD students at Brock University.
+- Lab manager for Prof. [Beatrice Ombuki-Berman](https://www.ombuki-berman.com/){: style="color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;"}, supporting a research group with over 10 undergraduate, master's, and PhD students at Brock University.
 
 ## Workshops & Outreach
 

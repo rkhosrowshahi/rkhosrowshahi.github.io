@@ -36,7 +36,7 @@ nav_order: 4
       <p><strong>Nature-Inspired Computational Intelligence Lab</strong></p>
       <ul>
         <li>Researching large-scale global optimization, semi-supervised learning, and evolutionary computation.</li>
-        <li>Conducting research under the supervision of Prof. Shahryar Rahnamayan.</li>
+        <li>Conducting research under the supervision of Prof. <a href="https://rahnamayan.ca/" style="color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;">Shahryar Rahnamayan</a>.</li>
       </ul>
     </div>
     <div class="col-md-4 text-md-right">
