@@ -1,12 +1,12 @@
 metadata:
-  last_updated: '2026-06-26'
+  last_updated: '2026-06-29'
 papers:
   yvSevxQAAAAJ:2osOgNQ5qMEC:
     citations: 3
     title: Block Differential Evolution
     year: '2023'
   yvSevxQAAAAJ:7T2F9Uy0os0C:
-    citations: 2
+    citations: 3
     title: Enhancing image retrieval through optimal barcode representation
     year: '2025'
   yvSevxQAAAAJ:9yKSN-GCB0IC:
@@ -34,11 +34,11 @@ papers:
     title: Population-level center-based sampling for meta-heuristic algorithms
     year: '2025'
   yvSevxQAAAAJ:qjMakFHDy7sC:
-    citations: 5
+    citations: 6
     title: Intrusion Detection for Wireless Sensor Network Using Graph Neural Networks
     year: '2023'
   yvSevxQAAAAJ:u-x6o8ySG0sC:
-    citations: 3
+    citations: 4
     title: Ranking Center-based NSGA-II.
     year: '2023'
   yvSevxQAAAAJ:u5HHmVD_uO8C:
