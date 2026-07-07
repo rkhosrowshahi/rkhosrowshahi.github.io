@@ -4,6 +4,8 @@ cv:
   location: St. Catharines, ON, Canada
 
   social_networks:
+    - network: ORCID
+      username: 0000-0002-5130-8203
     - network: GitHub
       username: rkhosrowshahi
     - network: LinkedIn
