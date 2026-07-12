@@ -1,0 +1,382 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> CurveBench — how neural networks learn curves | Rasa Khosrowshahi </title> <meta name="author" content="Rasa Khosrowshahi"> <meta name="description" content="A small benchmark for 1D curve learning — comparing network width, activation, and optimizer (gradient descent vs evolution)."> <meta name="keywords" content="machine learning, artificial intelligence, optimization, academic website, portfolio"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/nn_logo.png?v=5f7cdbb6e6298876196866741edd5e5e"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://rkhosrowshahi.github.io/blog/2026/curvebench/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Rasa</span> Khosrowshahi </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item "> <a class="nav-link" href="/experience/">experience </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">publications </a> </li> <li class="nav-item "> <a class="nav-link" href="/service/">service </a> </li> <li class="nav-item "> <a class="nav-link" href="/teaching/">teaching </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">CurveBench — how neural networks learn curves</h1> <p class="post-meta"> Created on July 12, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/research"> <i class="fa-solid fa-hashtag fa-sm"></i> research</a>   <a href="/blog/tag/machine-learning"> <i class="fa-solid fa-hashtag fa-sm"></i> machine-learning</a>   <a href="/blog/tag/optimization"> <i class="fa-solid fa-hashtag fa-sm"></i> optimization</a>   <a href="/blog/tag/neural-networks"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-networks</a>   ·   <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> research</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p><a href="https://github.com/rkhosrowshahi/curvebench" rel="external nofollow noopener" target="_blank">CurveBench</a> is an open-source benchmark for <strong>1D curve learning</strong>: given samples ((x, y)), how well can a small MLP fit (y = f(x)), and how does that depend on <strong>width</strong>, <strong>activation</strong>, and <strong>optimizer</strong>?</p> <p>The repo trains three ReLU MLPs in parallel (widths 10 / 100 / 1000) with either <strong>PyTorch gradient methods</strong> (SGD, L-BFGS, RMSprop, Adam, AdamW) or <strong>JAX evolutionary optimizers</strong> via evosax (Differential Evolution, CMA-ES, Sep-CMA-ES). Every run exports a <strong>training video</strong> and a final <strong>figure</strong> so you can watch the prediction curve converge.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install</span> <span class="nt">-e</span> <span class="nb">.</span>
+curvebench <span class="nt">--config</span> configs/fourier3/adam.yaml
+</code></pre></div></div> <hr> <h2 id="experiment-1-does-width-matter">Experiment 1: does width matter?</h2> <p>Target (Fourier sum on (x \in [-10, 10])):</p> <p>[ y = \sin(x) + \tfrac{1}{2}\sin(2x) + \tfrac{1}{3}\sin(3x) ]</p> <table> <thead> <tr> <th>Network</th> <th>Architecture (d)</th> <th>Parameters</th> </tr> </thead> <tbody> <tr> <td>N1</td> <td><code class="language-plaintext highlighter-rouge">[1, 10, 10, 1]</code></td> <td>141</td> </tr> <tr> <td>N2</td> <td><code class="language-plaintext highlighter-rouge">[1, 100, 100, 1]</code></td> <td>10,401</td> </tr> <tr> <td>N3</td> <td><code class="language-plaintext highlighter-rouge">[1, 1000, 1000, 1]</code></td> <td>1,004,001</td> </tr> </tbody> </table> <p>Wider ReLU nets can stitch together more linear pieces, so they approximate this smooth target more closely — but <strong>optimizer choice dominates</strong> at a fixed width.</p> <h3 id="adam-1600-epochs">Adam (1600 epochs)</h3> <p>Three networks trained together with full-batch Adam:</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-adam.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> Adam on the Fourier target. N3 (purple) reaches the lowest MSE; N1 struggles. </div> <h3 id="sgd-1600-epochs">SGD (1600 epochs)</h3> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-sgd.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> SGD + momentum. N3 diverges (NaN); wider nets are not automatically easier for every optimizer. </div> <p>Final SGD snapshot:</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/curvebench/fourier3-sgd-final-480.webp 480w,/assets/img/curvebench/fourier3-sgd-final-800.webp 800w,/assets/img/curvebench/fourier3-sgd-final-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/curvebench/fourier3-sgd-final.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" data-zoomable="" loading="lazy" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <h3 id="differential-evolution-1600-steps">Differential Evolution (1600 steps)</h3> <p>Population-based search with memory-aware popsize (~(10\sqrt{D})):</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-de.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> DE at 1600 steps. Usable on N1/N2; N3 is RAM-limited (small population). </div> <p>With <strong>10k steps</strong> and (F=0.5), DE reaches strong N1/N2 fits (best N1 MSE ≈ 0.0066 in our runs).</p> <h3 id="cma-es-on-n1-1600-steps">CMA-ES on N1 (1600 steps)</h3> <p>Full CMA-ES is only practical for N1 (~141 parameters); larger nets switch to Sep-CMA-ES:</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-cmaes.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <h3 id="takeaway-width-experiment">Takeaway (width experiment)</h3> <p>At 1600 steps with ReLU, <strong>Adam / AdamW</strong> still win on wide nets (~0.012 MSE on N2/N3). Evolution can match or beat gradient methods on small nets given enough steps, but wide-net EA remains expensive.</p> <hr> <h2 id="experiment-2-learning-sinx--activation-and-ood">Experiment 2: learning (\sin(x)) — activation and OOD</h2> <p>A second target asks a different question: can the network <strong>extrapolate</strong> a periodic signal?</p> <ul> <li> <strong>Train</strong> on (x \in [-1, 1])</li> <li> <strong>Evaluate</strong> on (x \in [-3, 3]) (OOD regions shaded yellow)</li> <li>Single network (d = [1, 10, 10, 1])</li> </ul> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curvebench <span class="nt">--config</span> configs/sin/relu.yaml
+curvebench <span class="nt">--config</span> configs/sin/tanh.yaml
+curvebench <span class="nt">--config</span> configs/sin/sin.yaml
+</code></pre></div></div> <p><strong>ReLU</strong> — piecewise-linear extrapolation fails outside the training interval:</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/curvebench/sin-relu-final-480.webp 480w,/assets/img/curvebench/sin-relu-final-800.webp 800w,/assets/img/curvebench/sin-relu-final-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/curvebench/sin-relu-final.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" data-zoomable="" loading="lazy" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <p><strong>(\sin) activation</strong> — periodic inductive bias fits the target on and off the training domain:</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/curvebench/sin-sin-final-480.webp 480w,/assets/img/curvebench/sin-sin-final-800.webp 800w,/assets/img/curvebench/sin-sin-final-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/curvebench/sin-sin-final.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" data-zoomable="" loading="lazy" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <p>This mirrors the classic lesson: <strong>architecture and activation encode prior knowledge</strong> about the function class, not just capacity.</p> <hr> <h2 id="reproducing-results">Reproducing results</h2> <p>Configs live under <code class="language-plaintext highlighter-rouge">configs/</code> in the repo. Examples:</p> <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># configs/fourier3/adam.yaml</span>
+<span class="na">target</span><span class="pi">:</span> <span class="s">fourier3</span>
+<span class="na">activation</span><span class="pi">:</span> <span class="s">relu</span>
+<span class="na">optimizer</span><span class="pi">:</span> <span class="s">adam</span>
+<span class="na">epochs</span><span class="pi">:</span> <span class="m">1600</span>
+</code></pre></div></div> <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># configs/sin/relu.yaml</span>
+<span class="na">target</span><span class="pi">:</span> <span class="s">sin</span>
+<span class="na">activation</span><span class="pi">:</span> <span class="s">relu</span>
+<span class="na">optimizer</span><span class="pi">:</span> <span class="s">adam</span>
+<span class="na">epochs</span><span class="pi">:</span> <span class="m">10000</span>
+<span class="na">widths</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">10</span><span class="pi">]</span>
+<span class="na">train_x_min</span><span class="pi">:</span> <span class="s">-1</span>
+<span class="na">train_x_max</span><span class="pi">:</span> <span class="m">1</span>
+</code></pre></div></div> <p>Outputs are written to <code class="language-plaintext highlighter-rouge">outputs/&lt;target&gt;/&lt;activation&gt;/&lt;Method&gt;/</code> with <code class="language-plaintext highlighter-rouge">figure.png</code> and <code class="language-plaintext highlighter-rouge">training.mp4</code>.</p> <p><strong>Repository:</strong> <a href="https://github.com/rkhosrowshahi/curvebench" rel="external nofollow noopener" target="_blank">github.com/rkhosrowshahi/curvebench</a> (MIT)</p> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/welcome/">Welcome</a> </li> </ul> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Rasa Khosrowshahi. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MVVSKJBN0"></script> <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-9MVVSKJBN0");
+</script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-cv",
+          title: "cv",
+          description: "Academic CV and professional experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "nav-experience",
+          title: "experience",
+          description: "Research, teaching, and industry experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/experience/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "Research projects in machine learning and optimization.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-publications",
+          title: "publications",
+          description: "Selected publications and research papers.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/publications/";
+          },
+        },{id: "nav-service",
+          title: "service",
+          description: "Academic service, reviewing, conference work, mentorship, and outreach.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/service/";
+          },
+        },{id: "nav-teaching",
+          title: "teaching",
+          description: "Teaching assistantships and course support.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/teaching/";
+          },
+        },{id: "post-curvebench-how-neural-networks-learn-curves",
+        
+          title: "CurveBench — how neural networks learn curves",
+        
+        description: "A small benchmark for 1D curve learning — comparing network width, activation, and optimizer (gradient descent vs evolution).",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/curvebench/";
+          
+        },
+      },{id: "post-welcome",
+        
+          title: "Welcome",
+        
+        description: "A first note on this research website.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/welcome/";
+          
+        },
+      },{id: "news-our-work-enhancing-image-retrieval-through-optimal-barcode-representation-https-www-nature-com-articles-s41598-025-14576-x-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-by-scientific-reports",
+          title: 'Our work [Enhancing image retrieval through optimal barcode representation](https://www.nature.com/articles/s41598-025-14576-x){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-multi-objective-reference-aligned-machine-unlearning-https-arxiv-org-abs-2606-00399-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-at-canadian-ai-2026",
+          title: 'Our work [Multi-Objective Reference-Aligned Machine Unlearning](https://arxiv.org/abs/2606.00399){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;&amp;quot;} was...',
+          description: "",
+          section: "News",},{id: "news-our-work-center-based-sampling-in-optimization-and-machine-learning-a-theory-and-review-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-the-cec-theory-session-at-wcci-2026",
+          title: 'Our work [Center-based Sampling in Optimization and Machine Learning: A Theory and Review](){:...',
+          description: "",
+          section: "News",},{id: "news-we-are-thrilled-to-announce-the-acceptance-of-torchjd-https-torchjd-org-stable-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-into-the-pytorch-ecosystem-https-github-com-pytorch-fdn-ecosystem-issues-66-issuecomment-4556222998-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot",
+          title: 'We are thrilled to announce the acceptance of [TorchJD](https://torchjd.org/stable/){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "projects-block-differential-evolution",
+          title: 'Block Differential Evolution',
+          description: "Differential evolution for large-scale global optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/block-differential-evolution/";
+            },},{id: "projects-clustering-center-based-differential-evolution",
+          title: 'Clustering Center-based Differential Evolution',
+          description: "Center-based sampling for differential evolution.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/clustering-center-based-differential-evolution/";
+            },},{id: "projects-curvebench",
+          title: 'CurveBench',
+          description: "Benchmark 1D curve learning across network width, activation, and optimizer.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/curvebench/";
+            },},{id: "projects-brock-presentation-template",
+          title: 'Brock Presentation Template',
+          description: "The &quot;Brock University Presentation Slides Template in LaTeX&quot; project aims to develop a professional, standardized template for creating presentation slides using LaTeX. This template is tailored specifically for Brock University, incorporating the university&#39;s branding elements such as colors, logos, and typography.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-brock-presentation-template/";
+            },},{id: "projects-cbs-theory",
+          title: 'Cbs Theory',
+          description: "GitHub repository for cbs-theory.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cbs-theory/";
+            },},{id: "projects-ccde-wcci2022",
+          title: 'CCDE-WCCI2022',
+          description: "Source code of the Clustering Center-based Differential Evolution algorithm for CEC&#39;2017 bound-constrained optimization benchmarks.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-ccde-wcci2022/";
+            },},{id: "projects-cec2013lsgo",
+          title: 'cec2013lsgo',
+          description: "Pure-Python CEC&#39;2013 Large-Scale Global Optimization benchmark implementation with arbitrary-dimensional, seed-based benchmark generation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cec2013lsgo/";
+            },},{id: "projects-clustering-center-based",
+          title: 'Clustering Center Based',
+          description: "GitHub repository for clustering-center-based.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-clustering-center-based/";
+            },},{id: "projects-deepfeaturebarcodingcga",
+          title: 'DeepFeatureBarcodingCGA',
+          description: "GitHub repository for DeepFeatureBarcodingCGA.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-deep-feature-barcoding-cga/";
+            },},{id: "projects-drawopt-mern",
+          title: 'Drawopt Mern',
+          description: "GitHub repository for drawopt-mern.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-drawopt-mern/";
+            },},{id: "projects-efun-city-of-toronto",
+          title: 'Efun City Of Toronto',
+          description: "City of Toronto efun course registration bot written with Python Selenium",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-efun-city-of-toronto/";
+            },},{id: "projects-evonas",
+          title: 'EvoNAS',
+          description: "GitHub repository for EvoNAS.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-nas/";
+            },},{id: "projects-evosubspaceoptimization",
+          title: 'EvoSubspaceOptimization',
+          description: "GitHub repository for EvoSubspaceOptimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-subspace-optimization/";
+            },},{id: "projects-evokge",
+          title: 'Evokge',
+          description: "GitHub repository for evokge.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evokge/";
+            },},{id: "projects-evonn",
+          title: 'Evonn',
+          description: "GitHub repository for evonn.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evonn/";
+            },},{id: "projects-mo-raul",
+          title: 'MO-RAUL',
+          description: "GitHub repository for MO-RAUL.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-raul/";
+            },},{id: "projects-mo-vae",
+          title: 'MO-VAE',
+          description: "GitHub repository for MO-VAE.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-vae/";
+            },},{id: "projects-torchjd",
+          title: 'torchjd',
+          description: "A PyTorch library for Jacobian descent that supports optimization of neural networks with multiple losses.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-torchjd/";
+            },},{id: "projects-ranking-center-based-nsga-ii",
+          title: 'Ranking Center-based NSGA-II',
+          description: "Center-based sampling for multi-objective optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ranking-center-based-nsga-ii/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-spring-2026/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-winter-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2025/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-spring-2025/";
+            },},{id: "teachings-cosc-4p86-machine-learning",
+          title: 'COSC 4P86, Machine Learning',
+          description: "Graduate teaching assistantship for Machine Learning at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p86-machine-learning-winter-2025/";
+            },},{id: "teachings-cosc-4p96-topics-in-computational-intelligence",
+          title: 'COSC 4P96, Topics in Computational Intelligence',
+          description: "Instructor for an undergraduate computational intelligence course at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p96-topics-in-computational-intelligence/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2024/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2025/";
+            },},{id: "teachings-designing-algorithms",
+          title: 'Designing Algorithms',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-designing-algorithms-fall-2022/";
+            },},{id: "teachings-machine-learning-and-data-mining",
+          title: 'Machine Learning and Data Mining',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-machine-learning-and-data-mining-winter-2023/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2022/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2023/";
+            },},{id: "teachings-principles-of-software-and-requirements-engineering",
+          title: 'Principles of Software and Requirements Engineering',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-principles-of-software-and-requirements-engineering-winter-2023/";
+            },},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing", "_blank");
+        },
+      },{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%72%6B%68%6F%73%72%6F%77%73%68%61%68%6C%69@%62%72%6F%63%6B%75.%63%61", "_blank");
+        },
+      },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=yvSevxQAAAAJ", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0000-0002-5130-8203", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/rkhosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-leetcode',
+        title: 'LeetCode',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://leetcode.com/u/Rasak/", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/rasa-khosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-x',
+        title: 'X',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://twitter.com/rkhosrowshahli", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
