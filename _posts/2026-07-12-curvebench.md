@@ -35,13 +35,15 @@ Three networks, same depth, different width:
 
 A ReLU net builds its prediction from **piecewise linear segments**. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.
 
+All runs below use **1600 epochs** (full-batch gradient methods) or **10,000 steps** (evolutionary methods), seed 123, unless noted.
+
 ---
 
-## Gradient descent: Adam vs SGD
+## Gradient descent
 
-### Adam
+### Adam and AdamW
 
-With full-batch Adam (1600 epochs), the wide net (N3, purple) pulls ahead early and tracks the harmonics well. The narrow net (N1) improves, but its prediction stays visibly smoother and less accurate — capacity is not the bottleneck here; **optimization** is.
+With full-batch Adam or AdamW, the wide net (N3, purple) pulls ahead early and tracks the harmonics well. The narrow net (N1) improves, but its prediction stays visibly smoother and less accurate — capacity is not the bottleneck here; **optimization** is.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -52,9 +54,46 @@ With full-batch Adam (1600 epochs), the wide net (N3, purple) pulls ahead early 
   Adam. N3 learns the curve fastest; N1 lags behind despite the same target and loss.
 </div>
 
+AdamW behaves almost identically on this problem — same trajectory, slightly different final N3 error.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-adamw.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  AdamW. Nearly the same learning dynamics as Adam on this 1D regression task.
+</div>
+
+### RMSprop
+
+RMSprop is the surprise among adaptive gradient methods: on N1 it reaches a **tighter fit than Adam**, while N3 still lags. The clip shows N1 (blue) locking onto the harmonics faster than in the Adam runs.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-rmsprop.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  RMSprop. Strong on N1; N2 and N3 improve but do not match Adam on the wide nets.
+</div>
+
+### L-BFGS
+
+L-BFGS with a full-batch line search makes slow, uneven progress. All three nets stay far from the target after 1600 epochs — second-order information does not rescue this non-convex curve-fitting problem at million-parameter scale.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-lbfgs.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  L-BFGS. Little visible improvement across N1–N3 within the epoch budget.
+</div>
+
 ### SGD
 
-SGD tells a different story. N1 and N2 make progress, but **N3 diverges** — the widest net is not the easiest to train. Watching the clip, the purple prediction blows up while the smaller nets keep fitting. Width buys expressiveness, not guaranteed learnability.
+At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — the purple prediction blows up while N1 and N2 keep fitting. Dropping $\mathrm{lr}$ to $10^{-3}$ stabilizes training: N3 finally converges and actually reaches the **best SGD fit** among the three widths.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -62,7 +101,7 @@ SGD tells a different story. N1 and N2 make progress, but **N3 diverges** — th
   </div>
 </div>
 <div class="caption">
-  SGD + momentum. N3 goes to NaN; wider is not always better under a naive optimizer.
+  SGD + momentum, $\mathrm{lr} = 10^{-3}$. N3 no longer diverges; wide nets need a gentler step size.
 </div>
 
 ---
@@ -73,12 +112,16 @@ The standout result in this benchmark is **Differential Evolution with $F = 0.5$
 
 At 1600 steps, DE is still searching — the prediction curve wiggles and only partially matches the target. Given enough steps, the same population-based search on the **smallest** network (N1, 141 parameters) reaches the **best overall fit** in our experiments:
 
-| Method         | Steps      | N1 MSE     | N2 MSE    | N3 MSE |
-| -------------- | ---------- | ---------- | --------- | ------ |
-| Adam           | 1600       | 0.180      | 0.012     | 0.012  |
-| DE ($F{=}0.5$) | **10,000** | **0.0066** | **0.036** | 0.237  |
+| Method                        | Budget           | N1 MSE     | N2 MSE    | N3 MSE    |
+| ----------------------------- | ---------------- | ---------- | --------- | --------- |
+| RMSprop                       | 1600 ep          | **0.013**  | 0.031     | 0.099     |
+| Adam                          | 1600 ep          | 0.180      | **0.012** | **0.012** |
+| AdamW                         | 1600 ep          | 0.179      | **0.012** | 0.015     |
+| SGD ($\mathrm{lr}{=}10^{-3}$) | 1600 ep          | 0.558      | 0.310     | 0.067     |
+| L-BFGS                        | 1600 ep          | 0.666      | 0.543     | 0.386     |
+| DE ($F{=}0.5$)                | **10,000 steps** | **0.0066** | **0.036** | 0.237     |
 
-DE does not need backpropagation. It proposes weight vectors, scores them by MSE, and iterates. On N1, that slow search eventually outperforms Adam. On N3, memory limits shrink the population and progress stalls — evolution does not scale to million-parameter nets as easily as Adam does.
+DE does not need backpropagation. It proposes weight vectors, scores them by MSE, and iterates. On N1, that slow search eventually outperforms every gradient method. On N3, memory limits shrink the population and progress stalls — evolution does not scale to million-parameter nets as easily as Adam does.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -125,7 +168,7 @@ That experiment is less about optimizer choice and more about **what function cl
 Stepping back from the numbers:
 
 1. **Width** changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
-2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD can destroy them; DE crawls but can win on small nets with enough steps.
+2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD needs tuning; RMSprop excels on small nets; L-BFGS stalls; DE crawls but can win on small nets with enough steps.
 3. **Activation** encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.
 
 CurveBench exists to make those differences **visible**. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
