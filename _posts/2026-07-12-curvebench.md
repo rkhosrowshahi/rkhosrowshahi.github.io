@@ -27,11 +27,11 @@ $$
 
 Three networks, same depth, different width:
 
-| Network | $d$ | Parameters |
-|---------|-----|------------|
-| N1 | `[1, 10, 10, 1]` | 141 |
-| N2 | `[1, 100, 100, 1]` | 10,401 |
-| N3 | `[1, 1000, 1000, 1]` | 1,004,001 |
+| Network | $d$                  | Parameters |
+| ------- | -------------------- | ---------- |
+| N1      | `[1, 10, 10, 1]`     | 141        |
+| N2      | `[1, 100, 100, 1]`   | 10,401     |
+| N3      | `[1, 1000, 1000, 1]` | 1,004,001  |
 
 A ReLU net builds its prediction from **piecewise linear segments**. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.
 
@@ -73,10 +73,10 @@ The standout result in this benchmark is **Differential Evolution with $F = 0.5$
 
 At 1600 steps, DE is still searching — the prediction curve wiggles and only partially matches the target. Given enough steps, the same population-based search on the **smallest** network (N1, 141 parameters) reaches the **best overall fit** in our experiments:
 
-| Method | Steps | N1 MSE | N2 MSE | N3 MSE |
-|--------|-------|--------|--------|--------|
-| Adam | 1600 | 0.180 | 0.012 | 0.012 |
-| DE ($F{=}0.5$) | **10,000** | **0.0066** | **0.036** | 0.237 |
+| Method         | Steps      | N1 MSE     | N2 MSE    | N3 MSE |
+| -------------- | ---------- | ---------- | --------- | ------ |
+| Adam           | 1600       | 0.180      | 0.012     | 0.012  |
+| DE ($F{=}0.5$) | **10,000** | **0.0066** | **0.036** | 0.237  |
 
 DE does not need backpropagation. It proposes weight vectors, scores them by MSE, and iterates. On N1, that slow search eventually outperforms Adam. On N3, memory limits shrink the population and progress stalls — evolution does not scale to million-parameter nets as easily as Adam does.
 
@@ -125,7 +125,7 @@ That experiment is less about optimizer choice and more about **what function cl
 Stepping back from the numbers:
 
 1. **Width** changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
-2. **Optimizer** changes the *trajectory* — Adam stabilizes wide nets; SGD can destroy them; DE crawls but can win on small nets with enough steps.
+2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD can destroy them; DE crawls but can win on small nets with enough steps.
 3. **Activation** encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.
 
 CurveBench exists to make those differences **visible**. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
