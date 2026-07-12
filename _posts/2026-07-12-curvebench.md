@@ -2,43 +2,46 @@
 layout: post
 title: CurveBench — how neural networks learn curves
 date: 2026-07-12 00:00:00
-description: A small benchmark for 1D curve learning — comparing network width, activation, and optimizer (gradient descent vs evolution).
+description: Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds.
 tags: research machine-learning optimization neural-networks
 categories: research
 thumbnail: assets/img/curvebench/preview.png
 related_posts: true
 ---
 
-[CurveBench](https://github.com/rkhosrowshahi/curvebench) is an open-source benchmark for **1D curve learning**: given samples \((x, y)\), how well can a small MLP fit \(y = f(x)\), and how does that depend on **width**, **activation**, and **optimizer**?
+How does a neural network learn a curve?
 
-The repo trains three ReLU MLPs in parallel (widths 10 / 100 / 1000) with either **PyTorch gradient methods** (SGD, L-BFGS, RMSprop, Adam, AdamW) or **JAX evolutionary optimizers** via evosax (Differential Evolution, CMA-ES, Sep-CMA-ES). Every run exports a **training video** and a final **figure** so you can watch the prediction curve converge.
+Not from a single loss number at the end — but from the **shape of the prediction** as training progresses. Does the fitted curve smooth out harmonic by harmonic? Does a wide net lock in quickly while a narrow one lags? Does SGD diverge while Adam stabilizes? Does a population-based search slowly crawl toward the target?
 
-```bash
-pip install -e .
-curvebench --config configs/fourier3/adam.yaml
-```
+[CurveBench](https://github.com/rkhosrowshahi/curvebench) is a small benchmark built to **watch** that process. Three ReLU MLPs — narrow, medium, and wide — learn the same 1D target side by side. Each run exports a training video: orange dots are the target, colored lines are the evolving prediction.
 
 ---
 
-## Experiment 1: does width matter?
+## The target
 
-Target (Fourier sum on \(x \in [-10, 10]\)):
+We start with a smooth Fourier sum on $x \in [-10, 10]$:
 
-\[
+$$
 y = \sin(x) + \tfrac{1}{2}\sin(2x) + \tfrac{1}{3}\sin(3x)
-\]
+$$
 
-| Network | Architecture \(d\) | Parameters |
-|---------|-------------------|------------|
+Three networks, same depth, different width:
+
+| Network | $d$ | Parameters |
+|---------|-----|------------|
 | N1 | `[1, 10, 10, 1]` | 141 |
 | N2 | `[1, 100, 100, 1]` | 10,401 |
 | N3 | `[1, 1000, 1000, 1]` | 1,004,001 |
 
-Wider ReLU nets can stitch together more linear pieces, so they approximate this smooth target more closely — but **optimizer choice dominates** at a fixed width.
+A ReLU net builds its prediction from **piecewise linear segments**. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.
 
-### Adam (1600 epochs)
+---
 
-Three networks trained together with full-batch Adam:
+## Gradient descent: Adam vs SGD
+
+### Adam
+
+With full-batch Adam (1600 epochs), the wide net (N3, purple) pulls ahead early and tracks the harmonics well. The narrow net (N1) improves, but its prediction stays visibly smoother and less accurate — capacity is not the bottleneck here; **optimization** is.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -46,10 +49,12 @@ Three networks trained together with full-batch Adam:
   </div>
 </div>
 <div class="caption">
-  Adam on the Fourier target. N3 (purple) reaches the lowest MSE; N1 struggles.
+  Adam. N3 learns the curve fastest; N1 lags behind despite the same target and loss.
 </div>
 
-### SGD (1600 epochs)
+### SGD
+
+SGD tells a different story. N1 and N2 make progress, but **N3 diverges** — the widest net is not the easiest to train. Watching the clip, the purple prediction blows up while the smaller nets keep fitting. Width buys expressiveness, not guaranteed learnability.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -57,105 +62,70 @@ Three networks trained together with full-batch Adam:
   </div>
 </div>
 <div class="caption">
-  SGD + momentum. N3 diverges (NaN); wider nets are not automatically easier for every optimizer.
+  SGD + momentum. N3 goes to NaN; wider is not always better under a naive optimizer.
 </div>
 
-Final SGD snapshot:
+---
+
+## Differential Evolution: patience wins
+
+The standout result in this benchmark is **Differential Evolution with $F = 0.5$** run for **10,000 steps**.
+
+At 1600 steps, DE is still searching — the prediction curve wiggles and only partially matches the target. Given enough steps, the same population-based search on the **smallest** network (N1, 141 parameters) reaches the **best overall fit** in our experiments:
+
+| Method | Steps | N1 MSE | N2 MSE | N3 MSE |
+|--------|-------|--------|--------|--------|
+| Adam | 1600 | 0.180 | 0.012 | 0.012 |
+| DE ($F{=}0.5$) | **10,000** | **0.0066** | **0.036** | 0.237 |
+
+DE does not need backpropagation. It proposes weight vectors, scores them by MSE, and iterates. On N1, that slow search eventually outperforms Adam. On N3, memory limits shrink the population and progress stalls — evolution does not scale to million-parameter nets as easily as Adam does.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
-    {% include figure.liquid path="assets/img/curvebench/fourier3-sgd-final.png" class="img-fluid rounded z-depth-1" zoomable=true %}
-  </div>
-</div>
-
-### Differential Evolution (1600 steps)
-
-Population-based search with memory-aware popsize (~\(10\sqrt{D}\)):
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-de.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+    {% include video.liquid path="assets/video/curvebench/fourier3-de-10k.mp4" class="img-fluid rounded z-depth-1" controls=true %}
   </div>
 </div>
 <div class="caption">
-  DE at 1600 steps. Usable on N1/N2; N3 is RAM-limited (small population).
+  DE with $F = 0.5$, 10,000 steps. Watch N1 (blue) converge to a tight fit — the best N1 result across all methods tested.
 </div>
 
-With **10k steps** and \(F=0.5\), DE reaches strong N1/N2 fits (best N1 MSE ≈ 0.0066 in our runs).
+The lesson from the clip: **learning a curve is a process, not a snapshot**. DE on a tiny net, given enough steps, can trace harmonics that gradient methods on the same architecture leave rough.
 
-### CMA-ES on N1 (1600 steps)
+---
 
-Full CMA-ES is only practical for N1 (~141 parameters); larger nets switch to Sep-CMA-ES:
+## CMA-ES on a small search space
+
+CMA-ES adapts a Gaussian over weights. Full CMA-ES is practical only for N1 (~141 parameters); the video below shows it steadily improving the N1 prediction over 1600 steps — competitive, but not matching DE's 10k-step N1 result.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
     {% include video.liquid path="assets/video/curvebench/fourier3-cmaes.mp4" class="img-fluid rounded z-depth-1" controls=true %}
   </div>
 </div>
-
-### Takeaway (width experiment)
-
-At 1600 steps with ReLU, **Adam / AdamW** still win on wide nets (~0.012 MSE on N2/N3). Evolution can match or beat gradient methods on small nets given enough steps, but wide-net EA remains expensive.
+<div class="caption">
+  CMA-ES on N1. Steady improvement, but DE at 10k steps still wins on MSE.
+</div>
 
 ---
 
-## Experiment 2: learning \(\sin(x)\) — activation and OOD
+## A different question: learning $\sin(x)$ beyond the training interval
 
-A second target asks a different question: can the network **extrapolate** a periodic signal?
+The Fourier experiment trains and tests on the same interval. A second experiment changes the question: **can the network extrapolate?**
 
-- **Train** on \(x \in [-1, 1]\)
-- **Evaluate** on \(x \in [-3, 3]\) (OOD regions shaded yellow)
-- Single network \(d = [1, 10, 10, 1]\)
+Target: $y = \sin(x)$. Train on $x \in [-1, 1]$, evaluate on $x \in [-3, 3]$.
 
-```bash
-curvebench --config configs/sin/relu.yaml
-curvebench --config configs/sin/tanh.yaml
-curvebench --config configs/sin/sin.yaml
-```
+With **ReLU** activations, the network learns reasonable fits inside the training band, but outside it the prediction is piecewise-linear — it cannot rediscover periodicity it never saw. Swap the activation to **$\sin$**, and the same architecture can extend the wave into the out-of-distribution regions, because the building blocks themselves are periodic.
 
-**ReLU** — piecewise-linear extrapolation fails outside the training interval:
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include figure.liquid path="assets/img/curvebench/sin-relu-final.png" class="img-fluid rounded z-depth-1" zoomable=true %}
-  </div>
-</div>
-
-**\(\sin\) activation** — periodic inductive bias fits the target on and off the training domain:
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include figure.liquid path="assets/img/curvebench/sin-sin-final.png" class="img-fluid rounded z-depth-1" zoomable=true %}
-  </div>
-</div>
-
-This mirrors the classic lesson: **architecture and activation encode prior knowledge** about the function class, not just capacity.
+That experiment is less about optimizer choice and more about **what function class the network can express** before training even starts.
 
 ---
 
-## Reproducing results
+## What the videos show
 
-Configs live under `configs/` in the repo. Examples:
+Stepping back from the numbers:
 
-```yaml
-# configs/fourier3/adam.yaml
-target: fourier3
-activation: relu
-optimizer: adam
-epochs: 1600
-```
+1. **Width** changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
+2. **Optimizer** changes the *trajectory* — Adam stabilizes wide nets; SGD can destroy them; DE crawls but can win on small nets with enough steps.
+3. **Activation** encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.
 
-```yaml
-# configs/sin/relu.yaml
-target: sin
-activation: relu
-optimizer: adam
-epochs: 10000
-widths: [10]
-train_x_min: -1
-train_x_max: 1
-```
-
-Outputs are written to `outputs/<target>/<activation>/<Method>/` with `figure.png` and `training.mp4`.
-
-**Repository:** [github.com/rkhosrowshahi/curvebench](https://github.com/rkhosrowshahi/curvebench) (MIT)
+CurveBench exists to make those differences **visible**. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
