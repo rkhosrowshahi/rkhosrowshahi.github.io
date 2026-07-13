@@ -1,0 +1,364 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Gradient Descent's Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods | Rasa Khosrowshahi </title> <meta name="author" content="Rasa Khosrowshahi"> <meta name="description" content="Every GD step costs roughly 3× a gradient-free forward pass, so matching step counts isn't a fair benchmark. Match on FLOPs instead."> <meta name="keywords" content="machine learning, artificial intelligence, optimization, academic website, portfolio"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/nn_logo.png?v=5f7cdbb6e6298876196866741edd5e5e"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://rkhosrowshahi.github.io/blog/2026/gradient-descent-hidden-tax/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Rasa</span> Khosrowshahi </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item "> <a class="nav-link" href="/experience/">experience </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">publications </a> </li> <li class="nav-item "> <a class="nav-link" href="/service/">service </a> </li> <li class="nav-item "> <a class="nav-link" href="/teaching/">teaching </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Gradient Descent's Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods</h1> <p class="post-meta"> Created on July 13, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/research"> <i class="fa-solid fa-hashtag fa-sm"></i> research</a>   <a href="/blog/tag/machine-learning"> <i class="fa-solid fa-hashtag fa-sm"></i> machine-learning</a>   <a href="/blog/tag/optimization"> <i class="fa-solid fa-hashtag fa-sm"></i> optimization</a>   <a href="/blog/tag/neural-networks"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-networks</a>   <a href="/blog/tag/benchmarking"> <i class="fa-solid fa-hashtag fa-sm"></i> benchmarking</a>   ·   <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> research</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="tldr">TL;DR</h2> <p>Every gradient descent (GD) step in a neural network costs roughly three times the compute of a gradient-free (GF) step. GD needs one forward pass plus two backward passes per layer (except the input layer, which only needs a weight gradient, not an input gradient, since nothing upstream needs it). GF methods only need a forward pass: there’s no gradient to compute, so the backward graph never gets built on the GPU at all. If you’re benchmarking GD against GF optimizers, giving both the same number of steps or epochs is not a fair fight. Give the GF method roughly three times the steps for the same compute budget, or better, match on FLOPs rather than steps.</p> <hr> <h2 id="where-the-2x-for-backward-comes-from">Where the 2x for backward comes from</h2> <p>Backpropagation at a single layer has to solve two separate problems, not one:</p> <p>Suppose layer $l$ takes in an input vector $x_{l-1}$ (the output of the previous layer), applies weights $W_l$ to it, and passes the result forward. $L$ is the scalar loss computed at the very end of the network, the single number the whole training run is trying to shrink. With that setup:</p> <ol> <li> <strong>Gradient with respect to the weights</strong>, $\dfrac{\partial L}{\partial W_l}$, so the optimizer knows how to update that layer.</li> <li> <strong>Gradient with respect to the layer’s input</strong>, $\dfrac{\partial L}{\partial x_{l-1}}$, so the error signal can keep flowing backward to earlier layers.</li> </ol> <p>Each of those is roughly the same amount of matrix multiplication as the forward pass itself. So a full backward pass through a layer costs about twice what the forward pass through that same layer cost. Add the forward pass back in, and one GD step is forward (1x) plus backward (2x) equals 3x the compute of a bare forward pass.</p> <p>The input layer is the one exception worth naming: since nothing feeds into it from an earlier layer, there’s no need to compute the input gradient there, only the weight gradient. In small networks this shaves off a noticeable sliver of compute; in deep networks with dozens or hundreds of layers, it rounds to a footnote.</p> <p>Putting numbers to it: for a layer $l$ with input dimension $d_{l-1}$ and output dimension $d_l$, the forward pass costs approximately</p> \[F_l \approx 2\, d_{l-1} d_l\] <p>FLOPs per example (the factor of 2 is the standard multiply-add convention). Backward through that same layer needs two gradients, each costing about as much as the forward pass:</p> \[\frac{\partial L}{\partial W_l} \approx 2\, d_{l-1} d_l, \qquad \frac{\partial L}{\partial x_{l-1}} \approx 2\, d_{l-1} d_l\] <p>so a full hidden layer costs $F_l$ forward plus $2F_l$ backward, or $3F_l$ total. Only the input layer ($l = 1$) drops the second term, costing $2F_1$ instead of $3F_1$, since there’s no $x_0$ upstream to send a gradient to. Summed over a network of $L$ layers:</p> \[C_{GD} = 3\sum_{l=2}^{L} F_l \;+\; 2F_1 \;\approx\; 3\sum_{l=1}^{L} F_l\] <p>for any network deep enough that one layer’s discount doesn’t move the total.</p> <p>This isn’t a hand wavy estimate. It matches the standard FLOPs accounting used in neural scaling law research, most notably <a href="https://arxiv.org/abs/2001.08361" rel="external nofollow noopener" target="_blank">Kaplan et al., 2020</a>: forward pass compute per token is approximately</p> \[C_{fwd} \approx 2N\] <p>FLOPs, where $N$ is the count of non-embedding parameters ($N \approx \sum_l d_{l-1} d_l$, which is exactly $\sum_l F_l$ up to the per-example constant). A full training step, forward and backward together, comes out to approximately</p> \[C_{GD} = C_{fwd} + C_{bwd} \approx 2N + 4N = 6N\] <p>meaning backward alone, $C_{bwd} \approx 4N$, is about twice forward. Three components, one forward and two backward equivalents, all the same order of magnitude.</p> <hr> <h2 id="why-gradient-free-methods-dodge-all-of-it">Why gradient-free methods dodge all of it</h2> <p>Gradient-free methods (<a href="https://arxiv.org/abs/1703.03864" rel="external nofollow noopener" target="_blank">evolution strategies</a>, genetic algorithms, random search, simulated annealing, zeroth-order optimization, CMA-ES, and similar) score a network by running it forward and reading off a loss or reward. There is no chain rule to unwind, so:</p> <ul> <li>No computation graph needs to be retained between layers.</li> <li>No backward kernels get launched on the GPU.</li> <li>No activation memory needs to be kept around for a later backward pass, which is a separate, often underrated win: it frees up memory for larger batches or larger populations in the same VRAM footprint.</li> </ul> <p>In the same notation as above, a GF evaluation only pays the forward term:</p> \[C_{GF} = C_{fwd} \approx 2N\] <p>which puts the ratio between the two at</p> \[\frac{C_{GD}}{C_{GF}} = \frac{6N}{2N} = 3\] <p>exactly the multiplier in the TL;DR, derived rather than asserted. That last point about memory matters more than it first appears, and it’s easy to miss if you only count FLOPs.</p> <hr> <h2 id="does-the-3x-hold-across-layer-types-and-architectures">Does the 3x hold across layer types and architectures?</h2> <p>The derivation above used a generic dense layer as the working example, since it’s the cleanest case. Once other layer types enter the picture, the ratio holds cleanly for some and drifts for others.</p> <h3 id="matmul-dominated-layers-convolutions-and-linear-projections">Matmul-dominated layers: convolutions and linear projections</h3> <p>Convolutional layers are structured matrix multiplies (via im2col or an equivalent formulation), so a conv layer with $C_{in}$ input channels, $C_{out}$ output channels, kernel size $k \times k$, and output spatial size $H \times W$ costs approximately</p> \[F_{conv} \approx 2\, k^2 C_{in} C_{out} H W\] <p>per example. Backward needs the same two gradients as a dense layer, a weight gradient and an input gradient, each costing about $F_{conv}$. The 3x rule carries over almost unchanged: convolutional networks (ResNets, U-Nets, and similar) follow the $3F_l$ per layer accounting about as cleanly as fully connected networks do. Transformer projection layers (QKV, output projection, MLP up and down projections) are literally dense layers, so the same accounting applies directly to them too.</p> <h3 id="the-extra-term-in-attention">The extra term in attention</h3> <p>Attention adds a second cost source beyond the projections: the $QK^\top$ score matrix and the score-weighted sum over values, which scale with sequence length $L$ rather than with parameter count:</p> \[C_{attn} \approx 2 L^2 d_{model}\] <p>per layer. This term isn’t linear in $N$, so it sits outside the clean $6N$ approximation entirely. When $L \ll d_{model}$, it’s small next to the projection cost and the 3x figure holds well. At long context lengths it can dominate, and forward:backward for this term still tracks close to 1:2 for the same chain rule reason as everywhere else, so the ratio survives even in the regime where the flat $6N$ absolute figure stops being accurate.</p> <h3 id="where-the-ratio-drifts-below-2x-elementwise-layers">Where the ratio drifts below 2x: elementwise layers</h3> <p>Activations (ReLU, GELU, SiLU), dropout, and residual adds don’t have a weight gradient and input gradient to split apart, there’s just one gradient to compute: the upstream signal multiplied by the local derivative at that point. So a bare elementwise layer costs roughly one unit of compute forward and about one unit backward, not two, since there’s no weight to update. These layers are cheap enough in absolute FLOPs that they don’t move the network wide ratio much, but they’re a genuine exception to “every layer is 3x.”</p> <h3 id="where-the-ratio-drifts-above-2x-normalization-layers">Where the ratio drifts above 2x: normalization layers</h3> <p>LayerNorm and BatchNorm are deceptively expensive on the backward side. Forward computes a mean and variance and normalizes with them. Backward needs gradients with respect to the scale and shift parameters, plus a gradient with respect to the input that depends on the full mean and variance gradient contribution across the batch or feature group, a cross-term that forward never had to compute at all. In absolute FLOPs these layers stay small next to matmuls, but their local forward:backward ratio isn’t the clean 1:2 that dense layers get.</p> <h3 id="embedding-layers-asymmetric-by-construction">Embedding layers: asymmetric by construction</h3> <p>Forward is a lookup (a gather), essentially free. Backward is a scatter-add into the embedding table’s gradient, one update per token rather than a dense matmul. Cheap in both directions, but the assumption that forward and backward share the same underlying operation doesn’t really apply here, since neither direction is a matmul to begin with.</p> <h3 id="recurrent-layers-same-ratio-different-memory-story">Recurrent layers: same ratio, different memory story</h3> <p>RNNs and LSTMs run backpropagation through time, which unrolls the same $3F_l$ per step accounting across every timestep in the sequence. The compute ratio per step doesn’t change: forward is still one matmul, backward is still two. But every intermediate hidden state across the full sequence needs to survive until backward reaches it, which is the same kind of memory pressure that made activation checkpointing necessary for transformers, just applied per timestep instead of per layer.</p> <h3 id="mixture-of-experts-the-ratio-holds-the-base-count-shrinks">Mixture-of-Experts: the ratio holds, the base count shrinks</h3> <p>MoE layers route each token to a handful of active experts rather than running every expert densely. Forward only pays for the active experts plus the router. Backward routes gradients back through exactly those same active experts, so the one forward, two backward accounting still applies, just to a sparse subset of the network’s total parameters rather than all of them. A GF evaluation of the same MoE would also only pay for the active experts, since gradient-free evaluation is still nothing but a forward pass, so the 3x comparison holds at the reduced, sparse FLOP count rather than the dense one.</p> <h3 id="bringing-it-back-to-the-3x-rule">Bringing it back to the 3x rule</h3> <p>None of this breaks the headline result. The 3x still holds for the layers that dominate total network compute (dense projections and convolutions), and it’s a reasonable estimate for attention and MoE too once you account for what’s actually active. It just isn’t literally true layer by layer: elementwise layers pull the ratio down, normalization layers push it up, and recurrent or checkpointed architectures add memory costs that a flat FLOP ratio never captures in the first place. The practical implication from the earlier profiling proposal still stands: measure the real ratio for your own architecture rather than assuming the idealized 3x applies uniformly across every layer type in the network.</p> <hr> <h2 id="the-benchmarking-mistake-this-causes">The benchmarking mistake this causes</h2> <p>A common setup in papers comparing GD to GF optimizers on neural networks: train network A with SGD/Adam for N epochs, train network B with an evolutionary strategy for N epochs or N generations, then compare final accuracy. This looks fair on paper because the step count matches. It isn’t fair, because each GD step did roughly 3x the work of each GF step. The GF method was handed a third of the compute budget and then judged against it.</p> <p>Making the correction explicit: at equal batch size, iso-compute between $S_{GD}$ gradient descent steps and $S_{GF}$ gradient-free steps requires</p> \[S_{GD} \cdot C_{GD} = S_{GF} \cdot C_{GF} \;\;\Longrightarrow\;\; S_{GF} = S_{GD} \cdot \frac{C_{GD}}{C_{GF}} = 3\, S_{GD}\] <p>so a fair comparison isn’t “run both for $N$ steps,” it’s “run GD for $N$ steps and GF for $3N$ steps,” or equivalently, plot both against $C_{GD} \cdot S_{GD}$ total FLOPs and read off whichever step count each method reaches at the same point on that axis.</p> <hr> <h2 id="a-few-ideas-for-fixing-the-comparison">A few ideas for fixing the comparison</h2> <h3 id="1-report-learning-curves-against-flops-not-epochs">1. Report learning curves against FLOPs, not epochs</h3> <p>Plotting loss or accuracy against wall clock time or total FLOPs consumed, rather than against epoch count, removes the ambiguity entirely. An epoch axis hides the fact that the units on it aren’t the same size for both methods. A compute axis doesn’t.</p> <h3 id="2-dont-trust-a-flat-3x-measure-your-own-ratio">2. Don’t trust a flat 3x, measure your own ratio</h3> <p>The 3x figure is a clean idealization. Real ratios drift depending on mixed precision, activation checkpointing (which trades extra recomputation for less memory, changing the backward cost), fused kernels, and optimizer state overhead (Adam keeps two extra moment buffers per parameter, adding update cost that a GF method never pays either). Before adjusting step counts, it’s worth profiling the actual forward to backward wall clock ratio for your own architecture and hardware, using something like <a href="https://docs.pytorch.org/docs/stable/profiler.html" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">torch.profiler</code></a> or a FLOP counter such as <a href="https://github.com/facebookresearch/fvcore" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">fvcore</code></a>, rather than assuming the textbook number holds exactly.</p> <h3 id="3-let-gf-spend-its-memory-savings-dont-just-give-it-more-steps">3. Let GF spend its memory savings, don’t just give it more steps</h3> <p>Since GF doesn’t hold onto activations for backward, it can often run a larger population per generation in the same memory as one GD forward-backward pass. A more honest comparison protocol matches both compute and memory: instead of a flat step multiplier, size the GF population so that peak memory usage across a generation equals the peak memory of one GD step, then compare at matched wall clock time. This tends to be more favorable to GF than a naive 3x step correction alone, since it captures a resource GD is quietly consuming that a step count comparison ignores.</p> <h3 id="4-try-a-two-phase-hybrid-schedule-as-a-benchmark-baseline">4. Try a two phase hybrid schedule as a benchmark baseline</h3> <p>Rather than treating GD and GF as competitors that must be scored on identical axes, a useful baseline is to spend an early compute budget on cheap GF exploration (many rough forward-only evaluations to locate a promising region of parameter space), then hand off to a smaller number of expensive GD steps for fine-grained convergence. Comparing this hybrid against pure GD and pure GF, all at matched total FLOPs, tends to be more informative than any single method’s learning curve in isolation, and it turns the compute asymmetry into something to exploit rather than a nuisance to correct for.</p> <h3 id="5-push-for-a-standard-compute-clock-in-optimizer-leaderboards">5. Push for a standard “compute clock” in optimizer leaderboards</h3> <p>Most optimizer benchmarks report best accuracy at a fixed epoch or step count. A compute-normalized alternative, where every method’s x-axis is total FLOPs (or measured GPU-seconds on a reference device) instead of steps, would make GD-versus-GF comparisons, and really any comparison between methods with different per-step costs, apples to apples by construction rather than by afterthought correction.</p> <hr> <h2 id="the-takeaway">The takeaway</h2> <p>The 3x rule is a useful default, not a universal constant. It’s grounded in real accounting (one forward, two backward, per layer, minus the input layer’s input gradient), and it lines up with the FLOPs ratios used in neural scaling law literature. But mixed precision, checkpointing, optimizer state, and memory headroom all nudge the true ratio around. The one thing worth taking away regardless of the exact multiplier: if a GD and a GF method are being compared on step count or epoch count alone, that comparison is measuring something other than what it claims to measure. Compute, not steps, is the currency that makes the comparison mean something.</p> <hr> <h2 id="references">References</h2> <ul> <li>Kaplan, J., McCandlish, S., Henighan, T., Brown, T. B., Chess, B., Child, R., Gray, S., Radford, A., Wu, J., &amp; Amodei, D. (2020). <a href="https://arxiv.org/abs/2001.08361" rel="external nofollow noopener" target="_blank">Scaling Laws for Neural Language Models</a>. arXiv:2001.08361.</li> <li>Salimans, T., Ho, J., Chen, X., Sidor, S., &amp; Sutskever, I. (2017). <a href="https://arxiv.org/abs/1703.03864" rel="external nofollow noopener" target="_blank">Evolution Strategies as a Scalable Alternative to Reinforcement Learning</a>. arXiv:1703.03864.</li> <li>PyTorch. <a href="https://docs.pytorch.org/docs/stable/profiler.html" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">torch.profiler</code></a> documentation.</li> <li>Facebook Research. <a href="https://github.com/facebookresearch/fvcore" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">fvcore</code></a>: a lightweight library with FLOP counting utilities.</li> </ul> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/curvebench/">CurveBench: how neural networks learn curves</a> </li> </ul> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Rasa Khosrowshahi. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MVVSKJBN0"></script> <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-9MVVSKJBN0");
+</script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-cv",
+          title: "cv",
+          description: "Academic CV and professional experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "nav-experience",
+          title: "experience",
+          description: "Research, teaching, and industry experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/experience/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "Research projects in machine learning and optimization.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-publications",
+          title: "publications",
+          description: "Selected publications and research papers.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/publications/";
+          },
+        },{id: "nav-service",
+          title: "service",
+          description: "Academic service, reviewing, conference work, mentorship, and outreach.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/service/";
+          },
+        },{id: "nav-teaching",
+          title: "teaching",
+          description: "Teaching assistantships and course support.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/teaching/";
+          },
+        },{id: "post-gradient-descent-39-s-hidden-tax-rethinking-how-we-compare-it-to-gradient-free-methods",
+        
+          title: "Gradient Descent&#39;s Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods",
+        
+        description: "Every GD step costs roughly 3× a gradient-free forward pass, so matching step counts isn&#39;t a fair benchmark. Match on FLOPs instead.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/gradient-descent-hidden-tax/";
+          
+        },
+      },{id: "post-curvebench-how-neural-networks-learn-curves",
+        
+          title: "CurveBench: how neural networks learn curves",
+        
+        description: "Watching MLPs learn 1D curves. Width, optimizer, and activation change what the prediction looks like as training unfolds.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/curvebench/";
+          
+        },
+      },{id: "news-our-work-enhancing-image-retrieval-through-optimal-barcode-representation-https-www-nature-com-articles-s41598-025-14576-x-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-by-scientific-reports",
+          title: 'Our work [Enhancing image retrieval through optimal barcode representation](https://www.nature.com/articles/s41598-025-14576-x){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-multi-objective-reference-aligned-machine-unlearning-https-arxiv-org-abs-2606-00399-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-at-canadian-ai-2026",
+          title: 'Our work [Multi-Objective Reference-Aligned Machine Unlearning](https://arxiv.org/abs/2606.00399){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;&amp;quot;} was...',
+          description: "",
+          section: "News",},{id: "news-our-work-center-based-sampling-in-optimization-and-machine-learning-a-theory-and-review-https-github-com-rkhosrowshahi-cbs-theory-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-the-cec-theory-session-at-wcci-2026",
+          title: 'Our work [Center-based Sampling in Optimization and Machine Learning: A Theory and Review](https://github.com/rkhosrowshahi/cbs-theory){:...',
+          description: "",
+          section: "News",},{id: "news-we-are-thrilled-to-announce-the-acceptance-of-torchjd-https-torchjd-org-stable-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-into-the-pytorch-ecosystem-https-github-com-pytorch-fdn-ecosystem-issues-66-issuecomment-4556222998-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot",
+          title: 'We are thrilled to announce the acceptance of [TorchJD](https://torchjd.org/stable/){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "projects-block-differential-evolution",
+          title: 'Block Differential Evolution',
+          description: "Differential evolution for large-scale global optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/block-differential-evolution/";
+            },},{id: "projects-clustering-center-based-differential-evolution",
+          title: 'Clustering Center-based Differential Evolution',
+          description: "Center-based sampling for differential evolution.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/clustering-center-based-differential-evolution/";
+            },},{id: "projects-curvebench",
+          title: 'CurveBench',
+          description: "Watch how MLPs learn 1D curves. Width, optimizer, and activation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/curvebench/";
+            },},{id: "projects-brock-presentation-template",
+          title: 'Brock Presentation Template',
+          description: "The &quot;Brock University Presentation Slides Template in LaTeX&quot; project aims to develop a professional, standardized template for creating presentation slides using LaTeX. This template is tailored specifically for Brock University, incorporating the university&#39;s branding elements such as colors, logos, and typography.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-brock-presentation-template/";
+            },},{id: "projects-cbs-theory",
+          title: 'Cbs Theory',
+          description: "GitHub repository for cbs-theory.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cbs-theory/";
+            },},{id: "projects-ccde-wcci2022",
+          title: 'CCDE-WCCI2022',
+          description: "Source code of the Clustering Center-based Differential Evolution algorithm for CEC&#39;2017 bound-constrained optimization benchmarks.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-ccde-wcci2022/";
+            },},{id: "projects-cec2013lsgo",
+          title: 'cec2013lsgo',
+          description: "Pure-Python CEC&#39;2013 Large-Scale Global Optimization benchmark implementation with arbitrary-dimensional, seed-based benchmark generation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cec2013lsgo/";
+            },},{id: "projects-clustering-center-based",
+          title: 'Clustering Center Based',
+          description: "GitHub repository for clustering-center-based.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-clustering-center-based/";
+            },},{id: "projects-deepfeaturebarcodingcga",
+          title: 'DeepFeatureBarcodingCGA',
+          description: "GitHub repository for DeepFeatureBarcodingCGA.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-deep-feature-barcoding-cga/";
+            },},{id: "projects-drawopt-mern",
+          title: 'Drawopt Mern',
+          description: "GitHub repository for drawopt-mern.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-drawopt-mern/";
+            },},{id: "projects-efun-city-of-toronto",
+          title: 'Efun City Of Toronto',
+          description: "City of Toronto efun course registration bot written with Python Selenium",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-efun-city-of-toronto/";
+            },},{id: "projects-evonas",
+          title: 'EvoNAS',
+          description: "GitHub repository for EvoNAS.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-nas/";
+            },},{id: "projects-evosubspaceoptimization",
+          title: 'EvoSubspaceOptimization',
+          description: "GitHub repository for EvoSubspaceOptimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-subspace-optimization/";
+            },},{id: "projects-evokge",
+          title: 'Evokge',
+          description: "GitHub repository for evokge.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evokge/";
+            },},{id: "projects-evonn",
+          title: 'Evonn',
+          description: "GitHub repository for evonn.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evonn/";
+            },},{id: "projects-mo-raul",
+          title: 'MO-RAUL',
+          description: "GitHub repository for MO-RAUL.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-raul/";
+            },},{id: "projects-mo-vae",
+          title: 'MO-VAE',
+          description: "GitHub repository for MO-VAE.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-vae/";
+            },},{id: "projects-torchjd",
+          title: 'torchjd',
+          description: "A PyTorch library for Jacobian descent that supports optimization of neural networks with multiple losses.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-torchjd/";
+            },},{id: "projects-ranking-center-based-nsga-ii",
+          title: 'Ranking Center-based NSGA-II',
+          description: "Center-based sampling for multi-objective optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ranking-center-based-nsga-ii/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-spring-2026/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-winter-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2025/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-spring-2025/";
+            },},{id: "teachings-cosc-4p86-machine-learning",
+          title: 'COSC 4P86, Machine Learning',
+          description: "Graduate teaching assistantship for Machine Learning at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p86-machine-learning-winter-2025/";
+            },},{id: "teachings-cosc-4p96-topics-in-computational-intelligence",
+          title: 'COSC 4P96, Topics in Computational Intelligence',
+          description: "Instructor for an undergraduate computational intelligence course at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p96-topics-in-computational-intelligence/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2024/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2025/";
+            },},{id: "teachings-designing-algorithms",
+          title: 'Designing Algorithms',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-designing-algorithms-fall-2022/";
+            },},{id: "teachings-machine-learning-and-data-mining",
+          title: 'Machine Learning and Data Mining',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-machine-learning-and-data-mining-winter-2023/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2022/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2023/";
+            },},{id: "teachings-principles-of-software-and-requirements-engineering",
+          title: 'Principles of Software and Requirements Engineering',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-principles-of-software-and-requirements-engineering-winter-2023/";
+            },},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing", "_blank");
+        },
+      },{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%72%6B%68%6F%73%72%6F%77%73%68%61%68%6C%69@%62%72%6F%63%6B%75.%63%61", "_blank");
+        },
+      },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=yvSevxQAAAAJ", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0000-0002-5130-8203", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/rkhosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-leetcode',
+        title: 'LeetCode',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://leetcode.com/u/Rasak/", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/rasa-khosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-x',
+        title: 'X',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://twitter.com/rkhosrowshahli", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
