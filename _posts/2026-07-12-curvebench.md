@@ -110,15 +110,15 @@ At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — t
 
 Population-based methods do not use gradients. They propose weight vectors, score them by MSE, and iterate. We compared five EAs under the **same GFLOP budget as 2000 GD steps** (~6000 forward passes per network, population 100):
 
-| Method                               | N1 MSE    | N2 MSE    | N3 MSE    |
-| ------------------------------------ | --------- | --------- | --------- |
-| **DE** (F=0.5, elitist)              | 0.606     | **0.416** | 0.515     |
-| **jDE** (adaptive F, CR; gauss init) | 0.485     | 0.532     | **0.465** |
-| **PSO** (w=0.9, c1=c2=2)             | 0.479     | 0.599     | 0.625     |
-| **PSO** (w=0.5)                      | **0.448** | 0.550     | 0.557     |
-| **Sep-CMA-ES**                       | 0.478     | 0.563     | 1.555     |
+| Method          | N1 MSE    | N2 MSE    | N3 MSE    |
+| --------------- | --------- | --------- | --------- |
+| **DE**          | 0.606     | **0.416** | 0.515     |
+| **jDE**         | 0.485     | 0.532     | **0.465** |
+| **PSO** (w=0.9) | 0.479     | 0.599     | 0.625     |
+| **PSO** (w=0.5) | **0.448** | 0.550     | 0.557     |
+| **Sep-CMA-ES**  | 0.478     | 0.563     | 1.555     |
 
-**No single EA wins on every width.** DE is strongest on the medium net (N2). jDE adapts mutation and crossover rates per individual and takes N3. PSO with lower inertia ($w = 0.5$) beats $w = 0.9$ everywhere on this task — less momentum, more responsiveness to personal and global bests. Sep-CMA-ES keeps up on small search spaces but collapses on the million-parameter net.
+**No single EA wins on every width.** DE is strongest on N2, jDE on N3, PSO ($w = 0.5$) on N1. Sep-CMA-ES keeps up on N1 and N2 but collapses on the million-parameter net.
 
 Each clip stacks N1 (top), N2 (middle), and N3 (bottom) so you can watch all three widths learn under the same algorithm.
 
@@ -137,7 +137,7 @@ DE proposes trial vectors by mixing population members and accepts improvements.
 
 ### jDE
 
-jDE carries its own mutation scale $F$ and crossover rate CR for each individual, resampling them occasionally and keeping successful pairs. Gaussian (Kaiming) initialization gives each swarm member a distinct starting function — critical for diversity on high-dimensional weight vectors.
+jDE gives each individual its own mutation and crossover settings, keeping what works after a successful trial.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -150,7 +150,7 @@ jDE carries its own mutation scale $F$ and crossover rate CR for each individual
 
 ### Particle Swarm Optimization
 
-We implemented pymoo-style PSO with fixed hyperparameters: per-dimension random coefficients, velocity clipping, and no fuzzy adaptation. Lower inertia ($w = 0.5$) consistently outperforms $w = 0.9$ here.
+PSO moves a swarm toward personal and global bests. Lower inertia ($w = 0.5$) consistently outperforms $w = 0.9$ here.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -172,7 +172,7 @@ We implemented pymoo-style PSO with fixed hyperparameters: per-dimension random 
 
 ### Sep-CMA-ES
 
-Diagonal CMA-ES adapts a per-weight step size. It is competitive on N1 and N2 but the N3 panel barely moves — the search space is too large for this population budget.
+Sep-CMA-ES adapts step sizes per weight. It is competitive on N1 and N2 but the N3 panel barely moves.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -231,7 +231,7 @@ Final train MSE on the Fourier target. Gradient methods: **2000 steps** (best le
 | Sep-CMA-ES  | 0.478     | 0.563     | 1.555     |
 | DE (F=0.5)  | 0.606     | 0.416     | 0.515     |
 
-Bold = best in column. At matched compute, **RMSprop wins on every width** — adaptive gradient methods dominate this budget. Among EAs, no single algorithm wins all three: PSO ($w{=}0.5$) on N1, DE on N2, jDE on N3.
+Bold = best in column. At matched compute, **RMSprop wins on every width**. Among EAs, no single algorithm wins all three: PSO (w=0.5) on N1, DE on N2, jDE on N3.
 
 With **unlimited budget**, DE at 10,000 steps still holds the record on N1 (MSE **0.0066**), below every entry above.
 
