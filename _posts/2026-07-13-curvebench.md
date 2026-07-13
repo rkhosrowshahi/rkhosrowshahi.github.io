@@ -181,9 +181,19 @@ Diagonal CMA-ES adapts a per-weight step size. We initialize the search with $\s
 
 ---
 
-## Differential Evolution with more compute
+## Small efficient neural networks with infinite compute
 
-When the function-evaluation budget is raised, DE with $F = 0.5$ can beat GFLOP-fair runs. We use `center_gaussian` init (seed network plus a Gaussian cloud, with the center itself in the population) and population size $\lceil 10\sqrt{D}\rceil$ on N1 and N2. N3 uses popsize 20 because full-budget runs on a million parameters are too slow.
+N1 has only 141 parameters, yet it is the hardest net to fit well under a tight EA budget and the easiest to polish when function evaluations are cheap. Raising the FE cap changes which algorithm wins and exposes how much population initialization and popsize matter.
+
+### Population init: `center_gaussian`
+
+We added three init modes. `center_gaussian` matches the original CurveBench recipe: one PyTorch seed network, a cloud of perturbations $\text{center} + \sigma \cdot \mathcal{N}(0, 1)$, and the exact center as one swarm member. `gaussian` gives every member an independent Kaiming draw plus a zero vector. `uniform` samples $U(-\sigma, \sigma)$ plus a zero vector.
+
+On N1 at 1M FEs, DE with `center_gaussian` and popsize $\lceil 10\sqrt{D}\rceil = 119$ reaches MSE 0.0066. The same run with popsize 100 stalls near 0.17. Independent Kaiming init (`gaussian`) behaves differently again. Init is not a detail here. It sets whether the search starts near one reasonable function or spreads across incompatible ones.
+
+### Differential Evolution at raised budgets
+
+DE uses $F = 0.5$, elitism, and `center_gaussian` with $\sigma = 0.1$. N1 and N2 use popsize $\lceil 10\sqrt{D}\rceil$. N3 is capped at 10k FEs and popsize 20 because a million-parameter forward pass per individual is too expensive at full budget.
 
 | Network | FEs       | Pop   | Final MSE |
 | ------- | --------- | ----- | --------- |
@@ -200,7 +210,31 @@ When the function-evaluation budget is raised, DE with $F = 0.5$ can beat GFLOP-
   DE with $F = 0.5$ at raised FE budgets (N1 / N2 / N3 stacked). N1 fits tightly. N2 improves but lags gradient methods. N3 moves slightly within 10k FEs on a million-parameter net.
 </div>
 
-Learning a curve is a process, not a snapshot. Under tight budgets, jDE and PSO compete with gradient methods on different widths. Under loose budgets, DE on a tiny net still sets the bar.
+N1 under loose compute beats every GFLOP-matched entry in the summary tables below, including RMSprop at 0.012. Patience and a well-centered cloud can trace harmonics that short-budget gradient steps leave rough on the same architecture.
+
+### PSO catches up when init and velocity match the problem
+
+The GFLOP-fair PSO sweep used independent Kaiming init (`gaussian`) and random initial velocities. Lower inertia ($w = 0.5$) won N1 at 0.448. Re-running PSO on N1 alone with `center_gaussian` at 1M FEs tells a different story.
+
+We fixed $c_1 = c_2 = 2$, popsize 119, zero initial velocity, and swept $w$:
+
+| Inertia $w$ | Init velocity | 1M FEs, N1 MSE |
+| ----------- | ------------- | -------------- |
+| 0.9         | random        | 0.353          |
+| 0.9         | zero          | 0.339          |
+| 0.5         | random        | 0.145          |
+| 0.5         | zero          | 0.0095         |
+| 0.25        | zero          | 0.012          |
+| 0.1         | zero          | 0.016          |
+
+Random velocity adds noise that helps at $w = 0.9$ but hurts at $w = 0.5$. Zero velocity lets low-inertia particles converge toward personal and global bests without overshooting. At $w = 0.5$ with zero velocity, PSO reaches 0.0095, within striking distance of DE (0.0066) on the same net and budget.
+
+Two practical lessons from the N1 unlimited-compute sweep:
+
+1. Match popsize to dimension ($\approx 10\sqrt{D}$ for DE on small nets).
+2. Match PSO inertia to initialization: `center_gaussian` pairs with low $w$ and zero velocity. High $w$ with a tight cloud around one seed barely moves.
+
+Wide nets (N2, N3) still favor gradient methods even after raising the EA budget, but the smallest net is where evolutionary search closes the gap if you give it enough evaluations and the right starting geometry.
 
 ---
 
@@ -247,7 +281,7 @@ Final train MSE on the Fourier target. Gradient methods: 2000 steps, reported se
 
 Bold in each GD block marks the better const vs cosine result for that optimizer and width. Overall GFLOP-matched winners: RMSprop (const) on N2 and N3, RMSprop (cosine) on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.
 
-With raised FE budgets, DE reaches MSE 0.0066 on N1 (1M FEs), well below every GFLOP-fair entry above. N2 and N3 improve but remain above gradient methods at matched compute.
+With raised FE budgets on N1, DE reaches MSE 0.0066 and PSO ($w = 0.5$, zero velocity, `center_gaussian`) reaches 0.0095, both well below every GFLOP-fair entry above. N2 and N3 improve under loose EA budgets but remain above gradient methods at matched compute.
 
 ---
 
@@ -256,7 +290,7 @@ With raised FE budgets, DE reaches MSE 0.0066 on N1 (1M FEs), well below every G
 Stepping back from the numbers:
 
 1. Width changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
-2. Optimizer changes the trajectory. Adam stabilizes wide nets with const LR. Cosine annealing hurts wide nets here. RMSprop excels overall. L-BFGS only becomes competitive on N1 with cosine decay. EAs crawl without gradients, but jDE and PSO can win on specific widths at matched compute.
+2. Optimizer changes the trajectory. Adam stabilizes wide nets with const LR. Cosine annealing hurts wide nets here. RMSprop excels overall. L-BFGS only becomes competitive on N1 with cosine decay. EAs crawl without gradients at matched compute, but on N1 with 1M FEs, DE and tuned PSO can approach gradient quality when init and popsize are right.
 3. Activation encodes prior knowledge about the shape of the world. That matters when the test domain extends beyond training.
 
 CurveBench exists to make those differences visible. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
