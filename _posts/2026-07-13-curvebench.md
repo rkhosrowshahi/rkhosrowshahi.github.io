@@ -35,7 +35,7 @@ Three networks, same depth, different width:
 
 A ReLU net builds its prediction from piecewise linear segments. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve, but only if the optimizer actually finds a good weight configuration.
 
-Gradient-descent runs use 2000 steps (GFLOP-matched budget per network), each under constant learning rate or cosine annealing to $\eta_{\min} = 0$. Evolutionary runs use the same GFLOP budget with a 6000 function-evaluation cap (population size 100). Seed 123 throughout.
+Gradient-descent runs use 2000 steps (GFLOP-matched budget per network), each under constant learning rate or cosine annealing to $\eta_{\min} = 0$. Evolutionary runs use the same GFLOP budget with a 6000 function-evaluation cap and fixed population size 100. Seed 123 throughout.
 
 ---
 
@@ -51,16 +51,16 @@ On this problem the schedule interacts strongly with width. Constant LR tends to
 | --------- | -------- | --------- | --------- | --------- |
 | RMSprop   | const    | 0.017     | **0.004** | **0.003** |
 | RMSprop   | cosine   | **0.012** | 0.006     | 0.004     |
-| Adam      | const    | **0.173** | **0.009** | **0.013** |
+| Adam      | const    | 0.173     | 0.009     | 0.013     |
 | Adam      | cosine   | 0.246     | 0.011     | 0.073     |
-| AdamW     | const    | **0.173** | **0.009** | **0.011** |
+| AdamW     | const    | 0.173     | 0.009     | 0.011     |
 | AdamW     | cosine   | 0.246     | 0.011     | 0.077     |
-| SGD       | const    | **0.506** | **0.290** | **0.063** |
+| SGD       | const    | 0.506     | 0.290     | 0.063     |
 | SGD       | cosine   | 0.595     | 0.324     | 0.186     |
 | L-BFGS    | const    | 0.666     | 0.571     | 0.478     |
-| L-BFGS    | cosine   | **0.232** | **0.307** | **0.315** |
+| L-BFGS    | cosine   | 0.232     | 0.307     | 0.315     |
 
-Bold = better of const vs cosine for that optimizer and width.
+Bold = lowest MSE in each column.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -189,7 +189,7 @@ N1 has only 141 parameters, yet it is the hardest net to fit well under a tight 
 
 We added three init modes. `center_gaussian` matches the original CurveBench recipe: one PyTorch seed network, a cloud of perturbations $\text{center} + \sigma \cdot \mathcal{N}(0, 1)$, and the exact center as one swarm member. `gaussian` gives every member an independent Kaiming draw plus a zero vector. `uniform` samples $U(-\sigma, \sigma)$ plus a zero vector.
 
-On N1 at 1M FEs, DE with `center_gaussian` and popsize $\lceil 10\sqrt{D}\rceil = 119$ reaches MSE 0.0066. The same run with popsize 100 stalls near 0.17. Independent Kaiming init (`gaussian`) behaves differently again. Init is not a detail here. It sets whether the search starts near one reasonable function or spreads across incompatible ones.
+On N1 at 1M FEs, DE with `center_gaussian` and popsize $\lceil 10\sqrt{D}\rceil = 119$ reaches MSE 0.0066. The same run with fixed popsize 100 stalls near 0.49. Independent Kaiming init (`gaussian`) behaves differently again. Init is not a detail here. It sets whether the search starts near one reasonable function or spreads across incompatible ones.
 
 ### Differential Evolution at raised budgets
 
@@ -197,7 +197,7 @@ DE uses $F = 0.5$, elitism, and `center_gaussian` with $\sigma = 0.1$. N1 and N2
 
 | Network | FEs       | Pop   | Final MSE |
 | ------- | --------- | ----- | --------- |
-| N1      | 1,000,000 | 119   | 0.0066    |
+| N1      | 1,000,000 | 119   | **0.0066** |
 | N2      | 1,000,000 | 1,020 | 0.188     |
 | N3      | 10,000    | 20    | 0.401     |
 
@@ -223,7 +223,7 @@ We fixed $c_1 = c_2 = 2$, popsize 119, zero initial velocity, and swept $w$:
 | 0.9         | random        | 0.353          |
 | 0.9         | zero          | 0.339          |
 | 0.5         | random        | 0.145          |
-| 0.5         | zero          | 0.0095         |
+| 0.5         | zero          | **0.0095**     |
 | 0.25        | zero          | 0.012          |
 | 0.1         | zero          | 0.016          |
 
@@ -260,14 +260,14 @@ Final train MSE on the Fourier target. Gradient methods: 2000 steps, reported se
 | ---------------- | --------- | --------- | --------- |
 | RMSprop (const)  | 0.017     | **0.004** | **0.003** |
 | RMSprop (cosine) | **0.012** | 0.006     | 0.004     |
-| Adam (const)     | **0.173** | **0.009** | **0.013** |
+| Adam (const)     | 0.173     | 0.009     | 0.013     |
 | Adam (cosine)    | 0.246     | 0.011     | 0.073     |
-| AdamW (const)    | **0.173** | **0.009** | **0.011** |
+| AdamW (const)    | 0.173     | 0.009     | 0.011     |
 | AdamW (cosine)   | 0.246     | 0.011     | 0.077     |
-| SGD (const)      | **0.506** | **0.290** | **0.063** |
+| SGD (const)      | 0.506     | 0.290     | 0.063     |
 | SGD (cosine)     | 0.595     | 0.324     | 0.186     |
 | L-BFGS (const)   | 0.666     | 0.571     | 0.478     |
-| L-BFGS (cosine)  | **0.232** | **0.307** | **0.315** |
+| L-BFGS (cosine)  | 0.232     | 0.307     | 0.315     |
 
 ### Evolutionary algorithms
 
@@ -279,7 +279,7 @@ Final train MSE on the Fourier target. Gradient methods: 2000 steps, reported se
 | PSO (w=0.5)                      | **0.448** | 0.550     | 0.557     |
 | Sep-CMA-ES ($\sigma=0.1$)        | 0.478     | 0.563     | 1.555     |
 
-Bold in each GD block marks the better const vs cosine result for that optimizer and width. Overall GFLOP-matched winners: RMSprop (const) on N2 and N3, RMSprop (cosine) on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.
+Bold marks the lowest MSE in each column. Overall GFLOP-matched winners: RMSprop (const) on N2 and N3, RMSprop (cosine) on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.
 
 With raised FE budgets on N1, DE reaches MSE 0.0066 and PSO ($w = 0.5$, zero velocity, `center_gaussian`) reaches 0.0095, both well below every GFLOP-fair entry above. N2 and N3 improve under loose EA budgets but remain above gradient methods at matched compute.
 
