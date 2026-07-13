@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CurveBench — how neural networks learn curves
+title: CurveBench: how neural networks learn curves
 date: 2026-07-13 00:00:00
 description: Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds.
 tags: research machine-learning optimization neural-networks
@@ -35,11 +35,68 @@ Three networks, same depth, different width:
 
 A ReLU net builds its prediction from **piecewise linear segments**. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.
 
-Gradient-descent runs below use **2000 steps** (GFLOP-matched budget per network). Evolutionary runs use the **same GFLOP budget** with a **6000 function-evaluation cap** (population size 100). Seed 123 throughout.
+Gradient-descent runs use **2000 steps** (GFLOP-matched budget per network), each under **constant learning rate** or **cosine annealing** to $\eta_{\min} = 0$. Evolutionary runs use the **same GFLOP budget** with a **6000 function-evaluation cap** (population size 100). Seed 123 throughout.
 
 ---
 
 ## Gradient descent
+
+Every GD optimizer below is run twice: fixed step size for all 2000 steps (**const**), or cosine decay from the initial rate down to zero (**cosine**).
+
+### Learning-rate schedule matters
+
+On this problem the schedule interacts strongly with width. **Constant LR** tends to win on the wide nets (N2, N3) for Adam, AdamW, and RMSprop — the step size stays large enough to keep fitting late in training. **Cosine annealing** helps on N1 for L-BFGS and RMSprop, where a long fine-tuning tail polishes the narrow net. SGD under either schedule lags the adaptive methods.
+
+| Optimizer | Schedule | N1 MSE    | N2 MSE    | N3 MSE    |
+| --------- | -------- | --------- | --------- | --------- |
+| RMSprop   | const    | 0.017     | **0.004** | **0.003** |
+| RMSprop   | cosine   | **0.012** | 0.006     | 0.004     |
+| Adam      | const    | **0.173** | **0.009** | **0.013** |
+| Adam      | cosine   | 0.246     | 0.011     | 0.073     |
+| AdamW     | const    | **0.173** | **0.009** | **0.011** |
+| AdamW     | cosine   | 0.246     | 0.011     | 0.077     |
+| SGD       | const    | **0.506** | **0.290** | **0.063** |
+| SGD       | cosine   | 0.595     | 0.324     | 0.186     |
+| L-BFGS    | const    | 0.666     | 0.571     | 0.478     |
+| L-BFGS    | cosine   | **0.232** | **0.307** | **0.315** |
+
+Bold = better of const vs cosine for that optimizer and width.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-adam-const-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  Adam, constant LR, 2000 steps (N1 / N2 / N3 stacked). N3 tracks the target well; cosine annealing on the same budget is worse on the wide nets.
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-adam-cosine-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  Adam, cosine LR, 2000 steps. The learning rate decays too quickly for N2 and N3 to reach the same fit.
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-rmsprop-const-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  RMSprop, constant LR. Best overall N2 and N3 MSE in the GFLOP-matched GD sweep.
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-rmsprop-cosine-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  RMSprop, cosine LR. Slightly better on N1, slightly worse on N2 and N3 than const.
+</div>
 
 ### Adam and AdamW
 
@@ -216,22 +273,34 @@ That experiment is less about optimizer choice and more about **what function cl
 
 ## Summary: all methods (GFLOP-matched budget)
 
-Final train MSE on the Fourier target. Gradient methods: **2000 steps** (best learning-rate schedule per optimizer: const or cosine). Evolutionary methods: **same GFLOP budget**, ~6000 function evaluations, population 100.
+Final train MSE on the Fourier target. Gradient methods: **2000 steps**, reported separately for **const** and **cosine** LR. Evolutionary methods: **same GFLOP budget**, ~6000 function evaluations, population 100.
 
-| Method      | N1 MSE    | N2 MSE    | N3 MSE    |
-| ----------- | --------- | --------- | --------- |
-| **RMSprop** | **0.012** | **0.004** | **0.003** |
-| Adam        | 0.173     | 0.009     | 0.013     |
-| AdamW       | 0.173     | 0.009     | 0.011     |
-| SGD         | 0.506     | 0.290     | 0.063     |
-| L-BFGS      | 0.232     | 0.307     | 0.315     |
-| PSO (w=0.5) | 0.448     | 0.550     | 0.557     |
-| PSO (w=0.9) | 0.479     | 0.599     | 0.625     |
-| jDE         | 0.485     | 0.532     | 0.465     |
-| Sep-CMA-ES  | 0.478     | 0.563     | 1.555     |
-| DE (F=0.5)  | 0.606     | 0.416     | 0.515     |
+### Gradient descent
 
-Bold = best in column. At matched compute, **RMSprop wins on every width**. Among EAs, no single algorithm wins all three: PSO (w=0.5) on N1, DE on N2, jDE on N3.
+| Method           | N1 MSE    | N2 MSE    | N3 MSE    |
+| ---------------- | --------- | --------- | --------- |
+| RMSprop (const)  | 0.017     | **0.004** | **0.003** |
+| RMSprop (cosine) | **0.012** | 0.006     | 0.004     |
+| Adam (const)     | **0.173** | **0.009** | **0.013** |
+| Adam (cosine)    | 0.246     | 0.011     | 0.073     |
+| AdamW (const)    | **0.173** | **0.009** | **0.011** |
+| AdamW (cosine)   | 0.246     | 0.011     | 0.077     |
+| SGD (const)      | **0.506** | **0.290** | **0.063** |
+| SGD (cosine)     | 0.595     | 0.324     | 0.186     |
+| L-BFGS (const)   | 0.666     | 0.571     | 0.478     |
+| L-BFGS (cosine)  | **0.232** | **0.307** | **0.315** |
+
+### Evolutionary algorithms
+
+| Method                               | N1 MSE    | N2 MSE    | N3 MSE    |
+| ------------------------------------ | --------- | --------- | --------- |
+| **DE** (F=0.5, elitist)              | 0.606     | **0.416** | 0.515     |
+| **jDE** (adaptive F, CR; gauss init) | 0.485     | 0.532     | **0.465** |
+| **PSO** (w=0.9, c1=c2=2)             | 0.479     | 0.599     | 0.625     |
+| **PSO** (w=0.5)                      | **0.448** | 0.550     | 0.557     |
+| **Sep-CMA-ES**                       | 0.478     | 0.563     | 1.555     |
+
+Bold in each GD block = better const vs cosine for that optimizer and width. Overall GFLOP-matched winners: **RMSprop (const)** on N2 and N3, **RMSprop (cosine)** on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.
 
 With **unlimited budget**, DE at 10,000 steps still holds the record on N1 (MSE **0.0066**), below every entry above.
 
@@ -242,7 +311,7 @@ With **unlimited budget**, DE at 10,000 steps still holds the record on N1 (MSE 
 Stepping back from the numbers:
 
 1. **Width** changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
-2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD needs tuning; RMSprop excels on small nets; L-BFGS stalls; EAs crawl without gradients but jDE and PSO can win on specific widths at matched compute.
+2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets with const LR; cosine annealing hurts wide nets here; RMSprop excels overall; L-BFGS only becomes competitive on N1 with cosine decay; EAs crawl without gradients but jDE and PSO can win on specific widths at matched compute.
 3. **Activation** encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.
 
 CurveBench exists to make those differences **visible**. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
