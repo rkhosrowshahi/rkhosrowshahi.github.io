@@ -181,17 +181,23 @@ Diagonal CMA-ES adapts a per-weight step size. We initialize the search with $\s
 
 ---
 
-## Differential Evolution with more steps
+## Differential Evolution with more compute
 
-When compute is not capped, DE with $F = 0.5$ at 10,000 steps on N1 reaches MSE 0.109, well below any GFLOP-fair run on the same architecture. Given enough function evaluations, a tiny net can trace harmonics that gradient methods leave rough under tight budgets.
+When the function-evaluation budget is raised, DE with $F = 0.5$ can beat GFLOP-fair runs. We use `center_gaussian` init (seed network plus a Gaussian cloud, with the center itself in the population) and population size $\lceil 10\sqrt{D}\rceil$ on N1 and N2. N3 uses popsize 20 because full-budget runs on a million parameters are too slow.
+
+| Network | FEs       | Pop   | Final MSE |
+| ------- | --------- | ----- | --------- |
+| N1      | 1,000,000 | 119   | 0.0066    |
+| N2      | 1,000,000 | 1,020 | 0.188     |
+| N3      | 10,000    | 20    | 0.401     |
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-de-10k.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+    {% include video.liquid path="assets/video/curvebench/fourier3-de-unlimited-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
   </div>
 </div>
 <div class="caption">
-  DE with $F = 0.5$, 10,000 steps (N1 only in this clip). Patience wins on the smallest net.
+  DE with $F = 0.5$ at raised FE budgets (N1 / N2 / N3 stacked). N1 fits tightly. N2 improves but lags gradient methods. N3 moves slightly within 10k FEs on a million-parameter net.
 </div>
 
 Learning a curve is a process, not a snapshot. Under tight budgets, jDE and PSO compete with gradient methods on different widths. Under loose budgets, DE on a tiny net still sets the bar.
@@ -241,7 +247,7 @@ Final train MSE on the Fourier target. Gradient methods: 2000 steps, reported se
 
 Bold in each GD block marks the better const vs cosine result for that optimizer and width. Overall GFLOP-matched winners: RMSprop (const) on N2 and N3, RMSprop (cosine) on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.
 
-With unlimited budget, DE at 10,000 steps reaches MSE 0.109 on N1, below every GFLOP-fair entry above.
+With raised FE budgets, DE reaches MSE 0.0066 on N1 (1M FEs), well below every GFLOP-fair entry above. N2 and N3 improve but remain above gradient methods at matched compute.
 
 ---
 
