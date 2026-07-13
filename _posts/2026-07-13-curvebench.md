@@ -195,11 +195,11 @@ On N1 at 1M FEs, DE with `center_gaussian` and popsize $\lceil 10\sqrt{D}\rceil 
 
 DE uses $F = 0.5$, elitism, and `center_gaussian` with $\sigma = 0.1$. N1 and N2 use popsize $\lceil 10\sqrt{D}\rceil$. N3 is capped at 10k FEs and popsize 20 because a million-parameter forward pass per individual is too expensive at full budget.
 
-| Network | FEs       | Pop   | Final MSE |
-| ------- | --------- | ----- | --------- |
+| Network | FEs       | Pop   | Final MSE  |
+| ------- | --------- | ----- | ---------- |
 | N1      | 1,000,000 | 119   | **0.0066** |
-| N2      | 1,000,000 | 1,020 | 0.188     |
-| N3      | 10,000    | 20    | 0.401     |
+| N2      | 1,000,000 | 1,020 | 0.188      |
+| N3      | 10,000    | 20    | 0.401      |
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
