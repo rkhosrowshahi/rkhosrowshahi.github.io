@@ -1,0 +1,364 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> CurveBench: how neural networks learn curves | Rasa Khosrowshahi </title> <meta name="author" content="Rasa Khosrowshahi"> <meta name="description" content="Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds."> <meta name="keywords" content="machine learning, artificial intelligence, optimization, academic website, portfolio"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/nn_logo.png?v=5f7cdbb6e6298876196866741edd5e5e"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://rkhosrowshahi.github.io/blog/2026/curvebench/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Rasa</span> Khosrowshahi </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item "> <a class="nav-link" href="/experience/">experience </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">publications </a> </li> <li class="nav-item "> <a class="nav-link" href="/service/">service </a> </li> <li class="nav-item "> <a class="nav-link" href="/teaching/">teaching </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">CurveBench: how neural networks learn curves</h1> <p class="post-meta"> Created on July 13, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/research"> <i class="fa-solid fa-hashtag fa-sm"></i> research</a>   <a href="/blog/tag/machine-learning"> <i class="fa-solid fa-hashtag fa-sm"></i> machine-learning</a>   <a href="/blog/tag/optimization"> <i class="fa-solid fa-hashtag fa-sm"></i> optimization</a>   <a href="/blog/tag/neural-networks"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-networks</a>   ·   <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> research</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>How does a neural network learn a curve?</p> <p>Not from a single loss number at the end — but from the <strong>shape of the prediction</strong> as training progresses. Does the fitted curve smooth out harmonic by harmonic? Does a wide net lock in quickly while a narrow one lags? Does SGD diverge while Adam stabilizes? Does a population-based search slowly crawl toward the target?</p> <p><a href="https://github.com/rkhosrowshahi/curvebench" rel="external nofollow noopener" target="_blank">CurveBench</a> is a small benchmark built to <strong>watch</strong> that process. Three ReLU MLPs — narrow, medium, and wide — learn the same 1D target side by side. Each run exports a training video: orange dots are the target, colored lines are the evolving prediction.</p> <hr> <h2 id="the-target">The target</h2> <p>We start with a smooth Fourier sum on $x \in [-10, 10]$:</p> \[y = \sin(x) + \tfrac{1}{2}\sin(2x) + \tfrac{1}{3}\sin(3x)\] <p>Three networks, same depth, different width:</p> <table> <thead> <tr> <th>Network</th> <th>$d$</th> <th>Parameters</th> </tr> </thead> <tbody> <tr> <td>N1</td> <td><code class="language-plaintext highlighter-rouge">[1, 10, 10, 1]</code></td> <td>141</td> </tr> <tr> <td>N2</td> <td><code class="language-plaintext highlighter-rouge">[1, 100, 100, 1]</code></td> <td>10,401</td> </tr> <tr> <td>N3</td> <td><code class="language-plaintext highlighter-rouge">[1, 1000, 1000, 1]</code></td> <td>1,004,001</td> </tr> </tbody> </table> <p>A ReLU net builds its prediction from <strong>piecewise linear segments</strong>. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.</p> <p>Gradient-descent runs use <strong>2000 steps</strong> (GFLOP-matched budget per network), each under <strong>constant learning rate</strong> or <strong>cosine annealing</strong> to $\eta_{\min} = 0$. Evolutionary runs use the <strong>same GFLOP budget</strong> with a <strong>6000 function-evaluation cap</strong> (population size 100). Seed 123 throughout.</p> <hr> <h2 id="gradient-descent">Gradient descent</h2> <p>Every GD optimizer below is run twice: fixed step size for all 2000 steps (<strong>const</strong>), or cosine decay from the initial rate down to zero (<strong>cosine</strong>).</p> <h3 id="learning-rate-schedule-matters">Learning-rate schedule matters</h3> <p>On this problem the schedule interacts strongly with width. <strong>Constant LR</strong> tends to win on the wide nets (N2, N3) for Adam, AdamW, and RMSprop — the step size stays large enough to keep fitting late in training. <strong>Cosine annealing</strong> helps on N1 for L-BFGS and RMSprop, where a long fine-tuning tail polishes the narrow net. SGD under either schedule lags the adaptive methods.</p> <table> <thead> <tr> <th>Optimizer</th> <th>Schedule</th> <th>N1 MSE</th> <th>N2 MSE</th> <th>N3 MSE</th> </tr> </thead> <tbody> <tr> <td>RMSprop</td> <td>const</td> <td>0.017</td> <td><strong>0.004</strong></td> <td><strong>0.003</strong></td> </tr> <tr> <td>RMSprop</td> <td>cosine</td> <td><strong>0.012</strong></td> <td>0.006</td> <td>0.004</td> </tr> <tr> <td>Adam</td> <td>const</td> <td><strong>0.173</strong></td> <td><strong>0.009</strong></td> <td><strong>0.013</strong></td> </tr> <tr> <td>Adam</td> <td>cosine</td> <td>0.246</td> <td>0.011</td> <td>0.073</td> </tr> <tr> <td>AdamW</td> <td>const</td> <td><strong>0.173</strong></td> <td><strong>0.009</strong></td> <td><strong>0.011</strong></td> </tr> <tr> <td>AdamW</td> <td>cosine</td> <td>0.246</td> <td>0.011</td> <td>0.077</td> </tr> <tr> <td>SGD</td> <td>const</td> <td><strong>0.506</strong></td> <td><strong>0.290</strong></td> <td><strong>0.063</strong></td> </tr> <tr> <td>SGD</td> <td>cosine</td> <td>0.595</td> <td>0.324</td> <td>0.186</td> </tr> <tr> <td>L-BFGS</td> <td>const</td> <td>0.666</td> <td>0.571</td> <td>0.478</td> </tr> <tr> <td>L-BFGS</td> <td>cosine</td> <td><strong>0.232</strong></td> <td><strong>0.307</strong></td> <td><strong>0.315</strong></td> </tr> </tbody> </table> <p>Bold = better of const vs cosine for that optimizer and width.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-adam-const-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> Adam, constant LR, 2000 steps (N1 / N2 / N3 stacked). N3 tracks the target well; cosine annealing on the same budget is worse on the wide nets. </div> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-adam-cosine-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> Adam, cosine LR, 2000 steps. The learning rate decays too quickly for N2 and N3 to reach the same fit. </div> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-rmsprop-const-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> RMSprop, constant LR. Best overall N2 and N3 MSE in the GFLOP-matched GD sweep. </div> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-rmsprop-cosine-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> RMSprop, cosine LR. Slightly better on N1, slightly worse on N2 and N3 than const. </div> <h3 id="adam-and-adamw">Adam and AdamW</h3> <p>With full-batch Adam or AdamW, the wide net (N3, purple) pulls ahead early and tracks the harmonics well. The narrow net (N1) improves, but its prediction stays visibly smoother and less accurate — capacity is not the bottleneck here; <strong>optimization</strong> is.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-adam.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> Adam. N3 learns the curve fastest; N1 lags behind despite the same target and loss. </div> <p>AdamW behaves almost identically on this problem — same trajectory, slightly different final N3 error.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-adamw.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> AdamW. Nearly the same learning dynamics as Adam on this 1D regression task. </div> <h3 id="rmsprop">RMSprop</h3> <p>RMSprop is the surprise among adaptive gradient methods: on N1 it reaches a <strong>tighter fit than Adam</strong>, while N3 still lags. The clip shows N1 (blue) locking onto the harmonics faster than in the Adam runs.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-rmsprop.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> RMSprop. Strong on N1; N2 and N3 improve but do not match Adam on the wide nets. </div> <h3 id="l-bfgs">L-BFGS</h3> <p>L-BFGS with a full-batch line search makes slow, uneven progress. All three nets stay far from the target after 1600 epochs — second-order information does not rescue this non-convex curve-fitting problem at million-parameter scale.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-lbfgs.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> L-BFGS. Little visible improvement across N1–N3 within the epoch budget. </div> <h3 id="sgd">SGD</h3> <p>At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — the purple prediction blows up while N1 and N2 keep fitting. Dropping $\mathrm{lr}$ to $10^{-3}$ stabilizes training: N3 finally converges and actually reaches the <strong>best SGD fit</strong> among the three widths.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-sgd.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> SGD + momentum, $\mathrm{lr} = 10^{-3}$. N3 no longer diverges; wide nets need a gentler step size. </div> <hr> <h2 id="evolutionary-algorithms-at-matched-compute">Evolutionary algorithms at matched compute</h2> <p>Population-based methods do not use gradients. They propose weight vectors, score them by MSE, and iterate. We compared five EAs under the <strong>same GFLOP budget as 2000 GD steps</strong> (~6000 forward passes per network, population 100):</p> <table> <thead> <tr> <th>Method</th> <th>N1 MSE</th> <th>N2 MSE</th> <th>N3 MSE</th> </tr> </thead> <tbody> <tr> <td> <strong>DE</strong> (F=0.5, elitist)</td> <td>0.606</td> <td><strong>0.416</strong></td> <td>0.515</td> </tr> <tr> <td> <strong>jDE</strong> (adaptive F, CR; gauss init)</td> <td>0.485</td> <td>0.532</td> <td><strong>0.465</strong></td> </tr> <tr> <td> <strong>PSO</strong> (w=0.9, c1=c2=2)</td> <td>0.479</td> <td>0.599</td> <td>0.625</td> </tr> <tr> <td> <strong>PSO</strong> (w=0.5)</td> <td><strong>0.448</strong></td> <td>0.550</td> <td>0.557</td> </tr> <tr> <td><strong>Sep-CMA-ES</strong></td> <td>0.478</td> <td>0.563</td> <td>1.555</td> </tr> </tbody> </table> <p><strong>No single EA wins on every width.</strong> DE is strongest on the medium net (N2). jDE adapts mutation and crossover rates per individual and takes N3. PSO with lower inertia ($w = 0.5$) beats $w = 0.9$ everywhere on this task — less momentum, more responsiveness to personal and global bests. Sep-CMA-ES keeps up on small search spaces but collapses on the million-parameter net.</p> <p>Each clip stacks N1 (top), N2 (middle), and N3 (bottom) so you can watch all three widths learn under the same algorithm.</p> <h3 id="differential-evolution">Differential Evolution</h3> <p>DE proposes trial vectors by mixing population members and accepts improvements. On N2 the prediction visibly tightens around the harmonics; on N3 progress is slower but steady.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-de-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> DE ($F = 0.5$), GFLOP-fair budget. Best N2 MSE among EAs; N1 prediction improves but stays rougher than gradient methods. </div> <h3 id="jde">jDE</h3> <p>jDE carries its own mutation scale $F$ and crossover rate CR for each individual, resampling them occasionally and keeping successful pairs. Gaussian (Kaiming) initialization gives each swarm member a distinct starting function — critical for diversity on high-dimensional weight vectors.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-jde-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> jDE, GFLOP-fair budget. Best N3 MSE; watch the bottom panel (purple) track the target while Sep-CMA-ES on N3 fails. </div> <h3 id="particle-swarm-optimization">Particle Swarm Optimization</h3> <p>We implemented pymoo-style PSO with fixed hyperparameters: per-dimension random coefficients and velocity clipping. Lower inertia ($w = 0.5$) consistently outperforms $w = 0.9$ here.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-pso-w05-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> PSO ($w = 0.5$), GFLOP-fair budget. Best N1 MSE among EAs; particles drift toward the global best without backprop. </div> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-pso-w09-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> PSO ($w = 0.9$), same budget. Higher inertia — slower to react; visibly worse on N2 and N3. </div> <h3 id="sep-cma-es">Sep-CMA-ES</h3> <p>Diagonal CMA-ES adapts a per-weight step size. It is competitive on N1 and N2 but the N3 panel barely moves — the search space is too large for this population budget.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-sep-cmaes-composed.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> Sep-CMA-ES, GFLOP-fair budget. Steady on N1/N2; N3 (bottom) stagnates. </div> <hr> <h2 id="differential-evolution-with-more-steps">Differential Evolution with more steps</h2> <p>The standout result when <strong>compute is not capped</strong> is still <strong>DE with $F = 0.5$ at 10,000 steps</strong> on N1 (MSE <strong>0.0066</strong>) — far below any GFLOP-fair run. Given enough function evaluations, a tiny net can trace harmonics that gradient methods on the same architecture leave rough.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <video src="/assets/video/curvebench/fourier3-de-10k.mp4" class="img-fluid rounded z-depth-1" width="auto" height="auto" controls=""></video> </figure> </div> </div> <div class="caption"> DE with $F = 0.5$, 10,000 steps (N1 only in this clip). Patience wins on the smallest net. </div> <p>The lesson: <strong>learning a curve is a process, not a snapshot</strong>. Under tight budgets, jDE and PSO compete with gradient methods on different widths; under loose budgets, DE on a tiny net still sets the bar.</p> <hr> <h2 id="a-different-question-learning-sinx-beyond-the-training-interval">A different question: learning $\sin(x)$ beyond the training interval</h2> <p>The Fourier experiment trains and tests on the same interval. A second experiment changes the question: <strong>can the network extrapolate?</strong></p> <p>Target: $y = \sin(x)$. Train on $x \in [-1, 1]$, evaluate on $x \in [-3, 3]$.</p> <p>With <strong>ReLU</strong> activations, the network learns reasonable fits inside the training band, but outside it the prediction is piecewise-linear — it cannot rediscover periodicity it never saw. Swap the activation to <strong>$\sin$</strong>, and the same architecture can extend the wave into the out-of-distribution regions, because the building blocks themselves are periodic.</p> <p>That experiment is less about optimizer choice and more about <strong>what function class the network can express</strong> before training even starts.</p> <hr> <h2 id="summary-all-methods-gflop-matched-budget">Summary: all methods (GFLOP-matched budget)</h2> <p>Final train MSE on the Fourier target. Gradient methods: <strong>2000 steps</strong>, reported separately for <strong>const</strong> and <strong>cosine</strong> LR. Evolutionary methods: <strong>same GFLOP budget</strong>, ~6000 function evaluations, population 100.</p> <h3 id="gradient-descent-1">Gradient descent</h3> <table> <thead> <tr> <th>Method</th> <th>N1 MSE</th> <th>N2 MSE</th> <th>N3 MSE</th> </tr> </thead> <tbody> <tr> <td>RMSprop (const)</td> <td>0.017</td> <td><strong>0.004</strong></td> <td><strong>0.003</strong></td> </tr> <tr> <td>RMSprop (cosine)</td> <td><strong>0.012</strong></td> <td>0.006</td> <td>0.004</td> </tr> <tr> <td>Adam (const)</td> <td><strong>0.173</strong></td> <td><strong>0.009</strong></td> <td><strong>0.013</strong></td> </tr> <tr> <td>Adam (cosine)</td> <td>0.246</td> <td>0.011</td> <td>0.073</td> </tr> <tr> <td>AdamW (const)</td> <td><strong>0.173</strong></td> <td><strong>0.009</strong></td> <td><strong>0.011</strong></td> </tr> <tr> <td>AdamW (cosine)</td> <td>0.246</td> <td>0.011</td> <td>0.077</td> </tr> <tr> <td>SGD (const)</td> <td><strong>0.506</strong></td> <td><strong>0.290</strong></td> <td><strong>0.063</strong></td> </tr> <tr> <td>SGD (cosine)</td> <td>0.595</td> <td>0.324</td> <td>0.186</td> </tr> <tr> <td>L-BFGS (const)</td> <td>0.666</td> <td>0.571</td> <td>0.478</td> </tr> <tr> <td>L-BFGS (cosine)</td> <td><strong>0.232</strong></td> <td><strong>0.307</strong></td> <td><strong>0.315</strong></td> </tr> </tbody> </table> <h3 id="evolutionary-algorithms">Evolutionary algorithms</h3> <table> <thead> <tr> <th>Method</th> <th>N1 MSE</th> <th>N2 MSE</th> <th>N3 MSE</th> </tr> </thead> <tbody> <tr> <td> <strong>DE</strong> (F=0.5, elitist)</td> <td>0.606</td> <td><strong>0.416</strong></td> <td>0.515</td> </tr> <tr> <td> <strong>jDE</strong> (adaptive F, CR; gauss init)</td> <td>0.485</td> <td>0.532</td> <td><strong>0.465</strong></td> </tr> <tr> <td> <strong>PSO</strong> (w=0.9, c1=c2=2)</td> <td>0.479</td> <td>0.599</td> <td>0.625</td> </tr> <tr> <td> <strong>PSO</strong> (w=0.5)</td> <td><strong>0.448</strong></td> <td>0.550</td> <td>0.557</td> </tr> <tr> <td><strong>Sep-CMA-ES</strong></td> <td>0.478</td> <td>0.563</td> <td>1.555</td> </tr> </tbody> </table> <p>Bold in each GD block = better const vs cosine for that optimizer and width. Overall GFLOP-matched winners: <strong>RMSprop (const)</strong> on N2 and N3, <strong>RMSprop (cosine)</strong> on N1. Among EAs: PSO (w=0.5) on N1, DE on N2, jDE on N3.</p> <p>With <strong>unlimited budget</strong>, DE at 10,000 steps still holds the record on N1 (MSE <strong>0.0066</strong>), below every entry above.</p> <hr> <h2 id="what-the-videos-show">What the videos show</h2> <p>Stepping back from the numbers:</p> <ol> <li> <strong>Width</strong> changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.</li> <li> <strong>Optimizer</strong> changes the <em>trajectory</em> — Adam stabilizes wide nets with const LR; cosine annealing hurts wide nets here; RMSprop excels overall; L-BFGS only becomes competitive on N1 with cosine decay; EAs crawl without gradients but jDE and PSO can win on specific widths at matched compute.</li> <li> <strong>Activation</strong> encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.</li> </ol> <p>CurveBench exists to make those differences <strong>visible</strong>. The <a href="https://github.com/rkhosrowshahi/curvebench" rel="external nofollow noopener" target="_blank">code and configs</a> are open source (MIT) if you want to run your own targets and watch your own curves learn.</p> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/welcome/">Welcome</a> </li> </ul> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Rasa Khosrowshahi. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MVVSKJBN0"></script> <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-9MVVSKJBN0");
+</script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-cv",
+          title: "cv",
+          description: "Academic CV and professional experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "nav-experience",
+          title: "experience",
+          description: "Research, teaching, and industry experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/experience/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "Research projects in machine learning and optimization.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-publications",
+          title: "publications",
+          description: "Selected publications and research papers.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/publications/";
+          },
+        },{id: "nav-service",
+          title: "service",
+          description: "Academic service, reviewing, conference work, mentorship, and outreach.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/service/";
+          },
+        },{id: "nav-teaching",
+          title: "teaching",
+          description: "Teaching assistantships and course support.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/teaching/";
+          },
+        },{id: "post-curvebench-how-neural-networks-learn-curves",
+        
+          title: "CurveBench: how neural networks learn curves",
+        
+        description: "Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/curvebench/";
+          
+        },
+      },{id: "post-welcome",
+        
+          title: "Welcome",
+        
+        description: "A first note on this research website.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/welcome/";
+          
+        },
+      },{id: "news-our-work-enhancing-image-retrieval-through-optimal-barcode-representation-https-www-nature-com-articles-s41598-025-14576-x-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-by-scientific-reports",
+          title: 'Our work [Enhancing image retrieval through optimal barcode representation](https://www.nature.com/articles/s41598-025-14576-x){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-multi-objective-reference-aligned-machine-unlearning-https-arxiv-org-abs-2606-00399-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-at-canadian-ai-2026",
+          title: 'Our work [Multi-Objective Reference-Aligned Machine Unlearning](https://arxiv.org/abs/2606.00399){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;&amp;quot;} was...',
+          description: "",
+          section: "News",},{id: "news-our-work-center-based-sampling-in-optimization-and-machine-learning-a-theory-and-review-https-github-com-rkhosrowshahi-cbs-theory-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-the-cec-theory-session-at-wcci-2026",
+          title: 'Our work [Center-based Sampling in Optimization and Machine Learning: A Theory and Review](https://github.com/rkhosrowshahi/cbs-theory){:...',
+          description: "",
+          section: "News",},{id: "news-we-are-thrilled-to-announce-the-acceptance-of-torchjd-https-torchjd-org-stable-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-into-the-pytorch-ecosystem-https-github-com-pytorch-fdn-ecosystem-issues-66-issuecomment-4556222998-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot",
+          title: 'We are thrilled to announce the acceptance of [TorchJD](https://torchjd.org/stable/){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "projects-block-differential-evolution",
+          title: 'Block Differential Evolution',
+          description: "Differential evolution for large-scale global optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/block-differential-evolution/";
+            },},{id: "projects-clustering-center-based-differential-evolution",
+          title: 'Clustering Center-based Differential Evolution',
+          description: "Center-based sampling for differential evolution.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/clustering-center-based-differential-evolution/";
+            },},{id: "projects-curvebench",
+          title: 'CurveBench',
+          description: "Watch how MLPs learn 1D curves — width, optimizer, and activation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/curvebench/";
+            },},{id: "projects-brock-presentation-template",
+          title: 'Brock Presentation Template',
+          description: "The &quot;Brock University Presentation Slides Template in LaTeX&quot; project aims to develop a professional, standardized template for creating presentation slides using LaTeX. This template is tailored specifically for Brock University, incorporating the university&#39;s branding elements such as colors, logos, and typography.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-brock-presentation-template/";
+            },},{id: "projects-cbs-theory",
+          title: 'Cbs Theory',
+          description: "GitHub repository for cbs-theory.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cbs-theory/";
+            },},{id: "projects-ccde-wcci2022",
+          title: 'CCDE-WCCI2022',
+          description: "Source code of the Clustering Center-based Differential Evolution algorithm for CEC&#39;2017 bound-constrained optimization benchmarks.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-ccde-wcci2022/";
+            },},{id: "projects-cec2013lsgo",
+          title: 'cec2013lsgo',
+          description: "Pure-Python CEC&#39;2013 Large-Scale Global Optimization benchmark implementation with arbitrary-dimensional, seed-based benchmark generation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cec2013lsgo/";
+            },},{id: "projects-clustering-center-based",
+          title: 'Clustering Center Based',
+          description: "GitHub repository for clustering-center-based.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-clustering-center-based/";
+            },},{id: "projects-deepfeaturebarcodingcga",
+          title: 'DeepFeatureBarcodingCGA',
+          description: "GitHub repository for DeepFeatureBarcodingCGA.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-deep-feature-barcoding-cga/";
+            },},{id: "projects-drawopt-mern",
+          title: 'Drawopt Mern',
+          description: "GitHub repository for drawopt-mern.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-drawopt-mern/";
+            },},{id: "projects-efun-city-of-toronto",
+          title: 'Efun City Of Toronto',
+          description: "City of Toronto efun course registration bot written with Python Selenium",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-efun-city-of-toronto/";
+            },},{id: "projects-evonas",
+          title: 'EvoNAS',
+          description: "GitHub repository for EvoNAS.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-nas/";
+            },},{id: "projects-evosubspaceoptimization",
+          title: 'EvoSubspaceOptimization',
+          description: "GitHub repository for EvoSubspaceOptimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-subspace-optimization/";
+            },},{id: "projects-evokge",
+          title: 'Evokge',
+          description: "GitHub repository for evokge.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evokge/";
+            },},{id: "projects-evonn",
+          title: 'Evonn',
+          description: "GitHub repository for evonn.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evonn/";
+            },},{id: "projects-mo-raul",
+          title: 'MO-RAUL',
+          description: "GitHub repository for MO-RAUL.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-raul/";
+            },},{id: "projects-mo-vae",
+          title: 'MO-VAE',
+          description: "GitHub repository for MO-VAE.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-vae/";
+            },},{id: "projects-torchjd",
+          title: 'torchjd',
+          description: "A PyTorch library for Jacobian descent that supports optimization of neural networks with multiple losses.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-torchjd/";
+            },},{id: "projects-ranking-center-based-nsga-ii",
+          title: 'Ranking Center-based NSGA-II',
+          description: "Center-based sampling for multi-objective optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ranking-center-based-nsga-ii/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-spring-2026/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-winter-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2025/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-spring-2025/";
+            },},{id: "teachings-cosc-4p86-machine-learning",
+          title: 'COSC 4P86, Machine Learning',
+          description: "Graduate teaching assistantship for Machine Learning at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p86-machine-learning-winter-2025/";
+            },},{id: "teachings-cosc-4p96-topics-in-computational-intelligence",
+          title: 'COSC 4P96, Topics in Computational Intelligence',
+          description: "Instructor for an undergraduate computational intelligence course at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p96-topics-in-computational-intelligence/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2024/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2025/";
+            },},{id: "teachings-designing-algorithms",
+          title: 'Designing Algorithms',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-designing-algorithms-fall-2022/";
+            },},{id: "teachings-machine-learning-and-data-mining",
+          title: 'Machine Learning and Data Mining',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-machine-learning-and-data-mining-winter-2023/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2022/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2023/";
+            },},{id: "teachings-principles-of-software-and-requirements-engineering",
+          title: 'Principles of Software and Requirements Engineering',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-principles-of-software-and-requirements-engineering-winter-2023/";
+            },},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing", "_blank");
+        },
+      },{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%72%6B%68%6F%73%72%6F%77%73%68%61%68%6C%69@%62%72%6F%63%6B%75.%63%61", "_blank");
+        },
+      },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=yvSevxQAAAAJ", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0000-0002-5130-8203", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/rkhosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-leetcode',
+        title: 'LeetCode',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://leetcode.com/u/Rasak/", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/rasa-khosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-x',
+        title: 'X',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://twitter.com/rkhosrowshahli", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
