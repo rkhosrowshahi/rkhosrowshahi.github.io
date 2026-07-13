@@ -110,13 +110,13 @@ At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — t
 
 Population-based methods do not use gradients. They propose weight vectors, score them by MSE, and iterate. We compared five EAs under the **same GFLOP budget as 2000 GD steps** (~6000 forward passes per network, population 100):
 
-| Method                                         | N1 MSE    | N2 MSE    | N3 MSE    |
-| ---------------------------------------------- | --------- | --------- | --------- |
-| **DE** ($F{=}0.5$, elitist)                    | 0.606     | **0.416** | 0.515     |
-| **jDE** (self-adaptive $F$, CR; gaussian init) | 0.485     | 0.532     | **0.465** |
-| **PSO** ($w{=}0.9$, $c_1{=}c_2{=}2$)           | 0.479     | 0.599     | 0.625     |
-| **PSO** ($w{=}0.5$)                            | **0.448** | 0.550     | 0.557     |
-| **Sep-CMA-ES**                                 | 0.478     | 0.563     | 1.555     |
+| Method                               | N1 MSE    | N2 MSE    | N3 MSE    |
+| ------------------------------------ | --------- | --------- | --------- |
+| **DE** (F=0.5, elitist)              | 0.606     | **0.416** | 0.515     |
+| **jDE** (adaptive F, CR; gauss init) | 0.485     | 0.532     | **0.465** |
+| **PSO** (w=0.9, c1=c2=2)             | 0.479     | 0.599     | 0.625     |
+| **PSO** (w=0.5)                      | **0.448** | 0.550     | 0.557     |
+| **Sep-CMA-ES**                       | 0.478     | 0.563     | 1.555     |
 
 **No single EA wins on every width.** DE is strongest on the medium net (N2). jDE adapts mutation and crossover rates per individual and takes N3. PSO with lower inertia ($w = 0.5$) beats $w = 0.9$ everywhere on this task — less momentum, more responsiveness to personal and global bests. Sep-CMA-ES keeps up on small search spaces but collapses on the million-parameter net.
 
@@ -218,18 +218,18 @@ That experiment is less about optimizer choice and more about **what function cl
 
 Final train MSE on the Fourier target. Gradient methods: **2000 steps** (best learning-rate schedule per optimizer: const or cosine). Evolutionary methods: **same GFLOP budget**, ~6000 function evaluations, population 100.
 
-| Method          | N1 MSE    | N2 MSE    | N3 MSE    |
-| --------------- | --------- | --------- | --------- |
-| **RMSprop**     | **0.012** | **0.004** | **0.003** |
-| Adam            | 0.173     | 0.009     | 0.013     |
-| AdamW           | 0.173     | 0.009     | 0.011     |
-| SGD             | 0.506     | 0.290     | 0.063     |
-| L-BFGS          | 0.232     | 0.307     | 0.315     |
-| PSO ($w{=}0.5$) | 0.448     | 0.550     | 0.557     |
-| PSO ($w{=}0.9$) | 0.479     | 0.599     | 0.625     |
-| jDE             | 0.485     | 0.532     | 0.465     |
-| Sep-CMA-ES      | 0.478     | 0.563     | 1.555     |
-| DE ($F{=}0.5$)  | 0.606     | 0.416     | 0.515     |
+| Method      | N1 MSE    | N2 MSE    | N3 MSE    |
+| ----------- | --------- | --------- | --------- |
+| **RMSprop** | **0.012** | **0.004** | **0.003** |
+| Adam        | 0.173     | 0.009     | 0.013     |
+| AdamW       | 0.173     | 0.009     | 0.011     |
+| SGD         | 0.506     | 0.290     | 0.063     |
+| L-BFGS      | 0.232     | 0.307     | 0.315     |
+| PSO (w=0.5) | 0.448     | 0.550     | 0.557     |
+| PSO (w=0.9) | 0.479     | 0.599     | 0.625     |
+| jDE         | 0.485     | 0.532     | 0.465     |
+| Sep-CMA-ES  | 0.478     | 0.563     | 1.555     |
+| DE (F=0.5)  | 0.606     | 0.416     | 0.515     |
 
 Bold = best in column. At matched compute, **RMSprop wins on every width** — adaptive gradient methods dominate this budget. Among EAs, no single algorithm wins all three: PSO ($w{=}0.5$) on N1, DE on N2, jDE on N3.
 
