@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CurveBench: how neural networks learn curves
+title: "CurveBench: how neural networks learn curves"
 date: 2026-07-13 00:00:00
 description: Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds.
 tags: research machine-learning optimization neural-networks
