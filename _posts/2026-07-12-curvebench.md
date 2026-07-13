@@ -1,7 +1,7 @@
 ---
 layout: post
 title: CurveBench — how neural networks learn curves
-date: 2026-07-12 00:00:00
+date: 2026-07-13 00:00:00
 description: Watching MLPs learn 1D curves — width, optimizer, and activation change what the prediction looks like as training unfolds.
 tags: research machine-learning optimization neural-networks
 categories: research
@@ -35,7 +35,7 @@ Three networks, same depth, different width:
 
 A ReLU net builds its prediction from **piecewise linear segments**. A wider hidden layer can allocate more segments, so in principle a wide net has more flexibility to trace a smooth oscillating curve — but only if the optimizer actually finds a good weight configuration.
 
-All runs below use **1600 epochs** (full-batch gradient methods) or **10,000 steps** (evolutionary methods), seed 123, unless noted.
+Gradient-descent runs below use **2000 steps** (GFLOP-matched budget per network). Evolutionary runs use the **same GFLOP budget** with a **6000 function-evaluation cap** (population size 100). Seed 123 throughout.
 
 ---
 
@@ -106,22 +106,88 @@ At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — t
 
 ---
 
-## Differential Evolution: patience wins
+## Evolutionary algorithms at matched compute
 
-The standout result in this benchmark is **Differential Evolution with $F = 0.5$** run for **10,000 steps**.
+Population-based methods do not use gradients. They propose weight vectors, score them by MSE, and iterate. We compared five EAs under the **same GFLOP budget as 2000 GD steps** (~6000 forward passes per network, population 100):
 
-At 1600 steps, DE is still searching — the prediction curve wiggles and only partially matches the target. Given enough steps, the same population-based search on the **smallest** network (N1, 141 parameters) reaches the **best overall fit** in our experiments:
+| Method                                         | N1 MSE    | N2 MSE    | N3 MSE    |
+| ---------------------------------------------- | --------- | --------- | --------- |
+| **DE** ($F{=}0.5$, elitist)                    | 0.606     | **0.416** | 0.515     |
+| **jDE** (self-adaptive $F$, CR; gaussian init) | 0.485     | 0.532     | **0.465** |
+| **PSO** ($w{=}0.9$, $c_1{=}c_2{=}2$)           | 0.479     | 0.599     | 0.625     |
+| **PSO** ($w{=}0.5$)                            | **0.448** | 0.550     | 0.557     |
+| **Sep-CMA-ES**                                 | 0.478     | 0.563     | 1.555     |
 
-| Method                        | Budget           | N1 MSE     | N2 MSE    | N3 MSE    |
-| ----------------------------- | ---------------- | ---------- | --------- | --------- |
-| RMSprop                       | 1600 ep          | **0.013**  | 0.031     | 0.099     |
-| Adam                          | 1600 ep          | 0.180      | **0.012** | **0.012** |
-| AdamW                         | 1600 ep          | 0.179      | **0.012** | 0.015     |
-| SGD ($\mathrm{lr}{=}10^{-3}$) | 1600 ep          | 0.558      | 0.310     | 0.067     |
-| L-BFGS                        | 1600 ep          | 0.666      | 0.543     | 0.386     |
-| DE ($F{=}0.5$)                | **10,000 steps** | **0.0066** | **0.036** | 0.237     |
+**No single EA wins on every width.** DE is strongest on the medium net (N2). jDE adapts mutation and crossover rates per individual and takes N3. PSO with lower inertia ($w = 0.5$) beats $w = 0.9$ everywhere on this task — less momentum, more responsiveness to personal and global bests. Sep-CMA-ES keeps up on small search spaces but collapses on the million-parameter net.
 
-DE does not need backpropagation. It proposes weight vectors, scores them by MSE, and iterates. On N1, that slow search eventually outperforms every gradient method. On N3, memory limits shrink the population and progress stalls — evolution does not scale to million-parameter nets as easily as Adam does.
+Each clip stacks N1 (top), N2 (middle), and N3 (bottom) so you can watch all three widths learn under the same algorithm.
+
+### Differential Evolution
+
+DE proposes trial vectors by mixing population members and accepts improvements. On N2 the prediction visibly tightens around the harmonics; on N3 progress is slower but steady.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-de-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  DE ($F = 0.5$), GFLOP-fair budget. Best N2 MSE among EAs; N1 prediction improves but stays rougher than gradient methods.
+</div>
+
+### jDE
+
+jDE carries its own mutation scale $F$ and crossover rate CR for each individual, resampling them occasionally and keeping successful pairs. Gaussian (Kaiming) initialization gives each swarm member a distinct starting function — critical for diversity on high-dimensional weight vectors.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-jde-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  jDE, GFLOP-fair budget. Best N3 MSE; watch the bottom panel (purple) track the target while Sep-CMA-ES on N3 fails.
+</div>
+
+### Particle Swarm Optimization
+
+We implemented pymoo-style PSO with fixed hyperparameters: per-dimension random coefficients, velocity clipping, and no fuzzy adaptation. Lower inertia ($w = 0.5$) consistently outperforms $w = 0.9$ here.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-pso-w05-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  PSO ($w = 0.5$), GFLOP-fair budget. Best N1 MSE among EAs; particles drift toward the global best without backprop.
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-pso-w09-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  PSO ($w = 0.9$), same budget. Higher inertia — slower to react; visibly worse on N2 and N3.
+</div>
+
+### Sep-CMA-ES
+
+Diagonal CMA-ES adapts a per-weight step size. It is competitive on N1 and N2 but the N3 panel barely moves — the search space is too large for this population budget.
+
+<div class="row mt-3">
+  <div class="col-sm mt-3 mt-md-0">
+    {% include video.liquid path="assets/video/curvebench/fourier3-sep-cmaes-composed.mp4" class="img-fluid rounded z-depth-1" controls=true %}
+  </div>
+</div>
+<div class="caption">
+  Sep-CMA-ES, GFLOP-fair budget. Steady on N1/N2; N3 (bottom) stagnates.
+</div>
+
+---
+
+## Differential Evolution with more steps
+
+The standout result when **compute is not capped** is still **DE with $F = 0.5$ at 10,000 steps** on N1 (MSE **0.0066**) — far below any GFLOP-fair run. Given enough function evaluations, a tiny net can trace harmonics that gradient methods on the same architecture leave rough.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
@@ -129,25 +195,10 @@ DE does not need backpropagation. It proposes weight vectors, scores them by MSE
   </div>
 </div>
 <div class="caption">
-  DE with $F = 0.5$, 10,000 steps. Watch N1 (blue) converge to a tight fit — the best N1 result across all methods tested.
+  DE with $F = 0.5$, 10,000 steps (N1 only in this clip). Patience wins on the smallest net.
 </div>
 
-The lesson from the clip: **learning a curve is a process, not a snapshot**. DE on a tiny net, given enough steps, can trace harmonics that gradient methods on the same architecture leave rough.
-
----
-
-## CMA-ES on a small search space
-
-CMA-ES adapts a Gaussian over weights. Full CMA-ES is practical only for N1 (~141 parameters); the video below shows it steadily improving the N1 prediction over 1600 steps — competitive, but not matching DE's 10k-step N1 result.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-cmaes.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  CMA-ES on N1. Steady improvement, but DE at 10k steps still wins on MSE.
-</div>
+The lesson: **learning a curve is a process, not a snapshot**. Under tight budgets, jDE and PSO compete with gradient methods on different widths; under loose budgets, DE on a tiny net still sets the bar.
 
 ---
 
@@ -168,7 +219,7 @@ That experiment is less about optimizer choice and more about **what function cl
 Stepping back from the numbers:
 
 1. **Width** changes how many linear pieces are available, but does not guarantee a better learned curve under every optimizer.
-2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD needs tuning; RMSprop excels on small nets; L-BFGS stalls; DE crawls but can win on small nets with enough steps.
+2. **Optimizer** changes the _trajectory_ — Adam stabilizes wide nets; SGD needs tuning; RMSprop excels on small nets; L-BFGS stalls; EAs crawl without gradients but jDE and PSO can win on specific widths at matched compute.
 3. **Activation** encodes prior knowledge about the shape of the world — critical when the test domain extends beyond training.
 
 CurveBench exists to make those differences **visible**. The [code and configs](https://github.com/rkhosrowshahi/curvebench) are open source (MIT) if you want to run your own targets and watch your own curves learn.
