@@ -98,68 +98,7 @@ Bold = better of const vs cosine for that optimizer and width.
   RMSprop, cosine LR. Slightly better on N1, slightly worse on N2 and N3 than const.
 </div>
 
-### Adam and AdamW
-
-With full-batch Adam or AdamW, the wide net (N3, purple) pulls ahead early and tracks the harmonics well. The narrow net (N1) improves, but its prediction stays visibly smoother and less accurate — capacity is not the bottleneck here; **optimization** is.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-adam.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  Adam. N3 learns the curve fastest; N1 lags behind despite the same target and loss.
-</div>
-
-AdamW behaves almost identically on this problem — same trajectory, slightly different final N3 error.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-adamw.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  AdamW. Nearly the same learning dynamics as Adam on this 1D regression task.
-</div>
-
-### RMSprop
-
-RMSprop is the surprise among adaptive gradient methods: on N1 it reaches a **tighter fit than Adam**, while N3 still lags. The clip shows N1 (blue) locking onto the harmonics faster than in the Adam runs.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-rmsprop.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  RMSprop. Strong on N1; N2 and N3 improve but do not match Adam on the wide nets.
-</div>
-
-### L-BFGS
-
-L-BFGS with a full-batch line search makes slow, uneven progress. All three nets stay far from the target after 1600 epochs — second-order information does not rescue this non-convex curve-fitting problem at million-parameter scale.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-lbfgs.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  L-BFGS. Little visible improvement across N1–N3 within the epoch budget.
-</div>
-
-### SGD
-
-At the default learning rate ($\mathrm{lr} = 10^{-2}$), SGD diverges on N3 — the purple prediction blows up while N1 and N2 keep fitting. Dropping $\mathrm{lr}$ to $10^{-3}$ stabilizes training: N3 finally converges and actually reaches the **best SGD fit** among the three widths.
-
-<div class="row mt-3">
-  <div class="col-sm mt-3 mt-md-0">
-    {% include video.liquid path="assets/video/curvebench/fourier3-sgd.mp4" class="img-fluid rounded z-depth-1" controls=true %}
-  </div>
-</div>
-<div class="caption">
-  SGD + momentum, $\mathrm{lr} = 10^{-3}$. N3 no longer diverges; wide nets need a gentler step size.
-</div>
+**AdamW** mirrors Adam under both schedules. **SGD** trails the adaptive methods; const LR is better on every width. **L-BFGS** struggles with const LR but cosine annealing improves the narrow net — on N2 and N3 it still lags RMSprop and Adam.
 
 ---
 
