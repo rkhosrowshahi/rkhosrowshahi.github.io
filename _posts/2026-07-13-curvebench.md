@@ -183,7 +183,7 @@ Diagonal CMA-ES adapts a per-weight step size. We initialize the search with $\s
 
 ## Differential Evolution with more steps
 
-When compute is not capped, DE with $F = 0.5$ at 10,000 steps on N1 reaches MSE **0.109**, well below any GFLOP-fair run on the same architecture. Given enough function evaluations, a tiny net can trace harmonics that gradient methods leave rough under tight budgets.
+When compute is not capped, DE with $F = 0.5$ at 10,000 steps on N1 reaches MSE 0.109, well below any GFLOP-fair run on the same architecture. Given enough function evaluations, a tiny net can trace harmonics that gradient methods leave rough under tight budgets.
 
 <div class="row mt-3">
   <div class="col-sm mt-3 mt-md-0">
