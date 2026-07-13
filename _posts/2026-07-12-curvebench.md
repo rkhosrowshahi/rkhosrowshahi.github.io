@@ -214,6 +214,29 @@ That experiment is less about optimizer choice and more about **what function cl
 
 ---
 
+## Summary: all methods (GFLOP-matched budget)
+
+Final train MSE on the Fourier target. Gradient methods: **2000 steps** (best learning-rate schedule per optimizer: const or cosine). Evolutionary methods: **same GFLOP budget**, ~6000 function evaluations, population 100.
+
+| Method          | N1 MSE    | N2 MSE    | N3 MSE    |
+| --------------- | --------- | --------- | --------- |
+| **RMSprop**     | **0.012** | **0.004** | **0.003** |
+| Adam            | 0.173     | 0.009     | 0.013     |
+| AdamW           | 0.173     | 0.009     | 0.011     |
+| SGD             | 0.506     | 0.290     | 0.063     |
+| L-BFGS          | 0.232     | 0.307     | 0.315     |
+| PSO ($w{=}0.5$) | 0.448     | 0.550     | 0.557     |
+| PSO ($w{=}0.9$) | 0.479     | 0.599     | 0.625     |
+| jDE             | 0.485     | 0.532     | 0.465     |
+| Sep-CMA-ES      | 0.478     | 0.563     | 1.555     |
+| DE ($F{=}0.5$)  | 0.606     | 0.416     | 0.515     |
+
+Bold = best in column. At matched compute, **RMSprop wins on every width** — adaptive gradient methods dominate this budget. Among EAs, no single algorithm wins all three: PSO ($w{=}0.5$) on N1, DE on N2, jDE on N3.
+
+With **unlimited budget**, DE at 10,000 steps still holds the record on N1 (MSE **0.0066**), below every entry above.
+
+---
+
 ## What the videos show
 
 Stepping back from the numbers:
