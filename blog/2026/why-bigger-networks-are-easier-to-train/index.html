@@ -1,0 +1,375 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Why Bigger Neural Networks Can Be Easier to Train | Rasa Khosrowshahi </title> <meta name="author" content="Rasa Khosrowshahi"> <meta name="description" content="Bigger networks do not only represent more functions. Overparameterization can make gradient descent's job easier and leave surprising traces of initialization behind."> <meta name="keywords" content="machine learning, artificial intelligence, optimization, academic website, portfolio"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/nn_logo.png?v=5f7cdbb6e6298876196866741edd5e5e"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://rkhosrowshahi.github.io/blog/2026/why-bigger-networks-are-easier-to-train/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Rasa</span> Khosrowshahi </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item "> <a class="nav-link" href="/experience/">experience </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">publications </a> </li> <li class="nav-item "> <a class="nav-link" href="/service/">service </a> </li> <li class="nav-item "> <a class="nav-link" href="/teaching/">teaching </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Why Bigger Neural Networks Can Be Easier to Train</h1> <p class="post-meta"> Created on July 15, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/research"> <i class="fa-solid fa-hashtag fa-sm"></i> research</a>   <a href="/blog/tag/machine-learning"> <i class="fa-solid fa-hashtag fa-sm"></i> machine-learning</a>   <a href="/blog/tag/neural-networks"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-networks</a>   <a href="/blog/tag/optimization"> <i class="fa-solid fa-hashtag fa-sm"></i> optimization</a>   <a href="/blog/tag/overparameterization"> <i class="fa-solid fa-hashtag fa-sm"></i> overparameterization</a>   <a href="/blog/tag/neural-tangent-kernel"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-tangent-kernel</a>   ·   <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> research</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="tldr">TL;DR</h2> <p>Why do larger neural networks often train better than smaller ones, even on easy tasks that a small network should be able to represent?</p> <p>The usual answer is <strong>capacity</strong>: more layers and neurons can express more complicated functions. That is true, but incomplete. Width also changes the optimization problem. An overparameterized network gives gradient descent more directions in which to reduce the loss, more redundant features to work with, and often a better conditioned local model. The small network may contain a good solution yet remain difficult for Adam or SGD to reach.</p> <p>A striking illustration comes from Depue’s experiment <a href="#references">[1]</a>: initialize a weight matrix with a grayscale image of a face or smiley, train the network, and the image remains visible beneath the learned updates. The network learned the task without erasing its starting point. Weird, right?</p> <p>That looks like lazy training, but the image alone does not prove it. It proves initialization memory. To establish the behavior predicted by Neural Tangent Kernel (NTK) theory <a href="#references">[2]</a>, we should also measure parameter displacement, representation drift, and changes in the tangent kernel.</p> <hr> <h2 id="the-first-answer-bigger-networks-have-more-capacity">The first answer: bigger networks have more capacity</h2> <p>Depth and width contribute in different ways.</p> <h3 id="depth-builds-compositions">Depth builds compositions</h3> <p>A layer does not merely add another collection of features. It composes new features from those produced below it. In vision, the familiar intuition is edges to textures, textures to parts, and parts to objects. The useful point is not that every trained network follows this exact hierarchy, but that depth provides an efficient language for nested computation.</p> <p>This is more than an intuition. Results on depth separation construct functions that a deep network can represent compactly but a shallower network can approximate only with exponentially greater width. Eldan and Shamir <a href="#references">[3]</a> showed an exponential separation between particular networks with three layers and two layers. Telgarsky <a href="#references">[4]</a> proved related separations for deeper ReLU networks.</p> <p>These are existence results for specially constructed function families, not a theorem that every real task gains exponentially from every additional layer. But they establish an important boundary: optimization cannot recover a function that the architecture cannot represent efficiently in the first place.</p> <h3 id="width-supplies-parallel-features">Width supplies parallel features</h3> <p>A wider layer can maintain more feature directions at the same level of abstraction. The universal approximation theorem <a href="#references">[5]</a> says that a single hidden layer with a suitable activation and enough units can approximate any continuous function on a compact domain.</p> <p>The phrase “enough units” does most of the work. The theorem guarantees existence, not a practical width, sample complexity, or training procedure. A shallow network might need an enormous number of units for a function that a deeper network represents economically.</p> <p>It is tempting to summarize the combined expressivity of $L$ layers of width $N$ as “$N^L$.” That is a useful picture of repeated recombination, but not a general formula for network capacity. Expressivity depends on the activation, architecture, parameter constraints, input dimension, and which measure of complexity we care about.</p> <p>So capacity matters. But it does not explain one observation from my own experiments with curve fitting.</p> <hr> <h2 id="the-puzzle-easy-curves-hard-small-networks">The puzzle: easy curves, hard small networks</h2> <p>In <a href="/blog/2026/curvebench/">CurveBench</a>, narrow, medium, and wide ReLU MLPs fit the same smooth target in one dimension:</p> \[y = \sin(x) + \frac{1}{2}\sin(2x) + \frac{1}{3}\sin(3x).\] <p>The narrow network has 141 parameters. That should be enough to produce a respectable approximation from linear pieces. Yet under the same budget of 2,000 steps, Adam reaches an MSE of 0.173 on the narrow net and 0.009 on the medium net. RMSprop shows the same direction: 0.017 versus 0.004.</p> <p>The result does not by itself prove that the narrow network has sufficient capacity—the best representable error would need to be established independently—but it makes an explanation based only on capacity unsatisfying. On a simple curve, the optimizer appears to benefit from surplus parameters.</p> <p>The better question is:</p> <blockquote> <p>Does width help because the network can represent a better answer, or because gradient descent can find an answer more easily?</p> </blockquote> <p>For finite networks trained by practical optimizers, the answer can be both.</p> <hr> <h2 id="width-changes-the-optimization-problem">Width changes the optimization problem</h2> <p>Suppose the network output on the training set is collected in a vector $f_\theta(X)$. Near the initialization $\theta_0$, its local linear approximation is</p> \[f_\theta(X) \approx f_{\theta_0}(X) + J_{\theta_0}(X)(\theta - \theta_0),\] <p>where $J_{\theta_0}$ is the Jacobian of outputs with respect to parameters.</p> <p>Adding parameters adds columns to this Jacobian. Those extra directions can make it easier to produce a desired change in the outputs without requiring any individual parameter to move far. If the Jacobian has adequate rank and is well conditioned over the relevant directions, gradient descent can reduce the training residual quickly.</p> <p>This gives a more precise version of “larger networks have more escape routes”:</p> <ul> <li> <strong>Redundancy:</strong> if some ReLU units are inactive or several units learn nearly duplicate features, others can still carry useful gradients.</li> <li> <strong>More descent directions:</strong> a wide model can often change the same prediction in many directions through parameter space.</li> <li> <strong>Smaller coordinated movement:</strong> the required function change can be distributed across many parameters instead of forcing a few weights to make large, tightly coupled moves.</li> <li> <strong>Large sets of solutions:</strong> in overparameterized systems, solutions with zero loss may form manifolds of high dimension rather than isolated points.</li> </ul> <p>Under suitable assumptions, theory makes parts of this story rigorous. Wide networks can satisfy conditions that guarantee convergence of gradient descent to zero training loss (see the Polyak–Łojasiewicz (PL)$^*$ analysis by Liu <em>et al.</em> <a href="#references">[6]</a>). This does not mean that every wide network has a globally benign landscape, or that Adam is automatically optimal. It means overparameterization can change the geometry in ways that make gradient based optimization tractable.</p> <blockquote> <p><strong>Remark (PL and PL$^*$).</strong> The PL condition says that near the set of minimizers, a small gradient already implies a small excess loss:</p> \[\|\nabla L(\theta)\|^2 \;\ge\; 2\mu \bigl(L(\theta) - L^*\bigr)\] <p>for some $\mu &gt; 0$. It is weaker than convexity, but still strong enough for gradient descent to reach a global minimum of the training loss. PL$^*$ is a variant used for overparameterized models which states the inequality needs to hold on most of parameter space, not everywhere. That is the regime Liu, Zhu, and Belkin analyze for wide networks.</p> </blockquote> <h3 id="why-adam-can-expose-the-difference">Why Adam can expose the difference</h3> <p>Adam applies a separate diagonal rescaling to each parameter based on gradient moments. It can help when coordinates have different gradient scales, but it cannot generally remove correlations or poor conditioning between coordinates. A narrow network may need a few neurons to move in a highly coordinated way to bend the fitted curve. A diagonal preconditioner does not turn that coupled problem into an independent one.</p> <p>In a wider network, the same output correction can be spread over many partially redundant units. Adam then has more usable directions and less responsibility concentrated in each neuron. This is a plausible mechanism for the CurveBench result, not a universal theorem about Adam.</p> <hr> <h2 id="lottery-tickets-support-the-optimization-storywith-a-width-caveat">Lottery tickets support the optimization story<span style="font-size:0.5em;">(with a width caveat)</span> </h2> <p>The Lottery Ticket Hypothesis <a href="#references">[7]</a> showed that dense networks can contain sparse subnetworks that, when reset to their original initialization and trained in isolation, match the dense network’s accuracy in the studied settings.</p> <p>This supports the idea that raw final capacity is not the whole benefit of the dense model. Initialization and trainability matter: the same sparse architecture with a new random initialization often performs worse.</p> <p>But the result is easy to overstate. The winning ticket is normally discovered by training and pruning the dense network. Its existence does not prove that the other weights were irrelevant to the search, nor does it give a cheap method for finding the right sparse subnetwork before training. A large network may serve as both the hypothesis class and the search scaffold.</p> <p>Double descent supplies another clue. Test error can fall again after a model passes the interpolation threshold, as documented by Belkin <em>et al.</em> <a href="#references">[8]</a>. Extra parameters do not automatically cause memorization to overwhelm generalization. The optimizer’s implicit bias determines which of the many interpolating solutions is selected.</p> <hr> <h2 id="a-face-hidden-in-the-weights">A face hidden in the weights</h2> <p>Now for the visual experiment.</p> <p>Instead of letting PyTorch randomly initialize a linear layer, reshape a grayscale image into its weight matrix. Train the network on an ordinary task with Adam. When the final matrix is displayed as an image, the original face or smiley can still be visible beneath the learned changes.</p> <p>Depue demonstrated this with MNIST <a href="#references">[1]</a>, reporting persistence across initializations, learning rates, optimizers, and weight decay settings. The result is surprising because we often speak as if training rewrites the network. In a sufficiently redundant parameterization, it may only annotate it.</p> <p>Write the final weights as</p> \[W_{\text{final}} = W_{\text{init}} + \Delta W.\] <p>If $|\Delta W|$ is small relative to $|W_{\text{init}}|$, the image remains visible. A large network can still change its output substantially because many small parameter updates combine through the Jacobian:</p> \[\Delta f(X) \approx J_{\theta_0}(X)\Delta\theta.\] <p>Small motion in parameter space does not imply small motion in function space.</p> <p>This is closely related to the <strong>lazy training</strong> or <strong>kernel</strong> regime. In the Neural Tangent Kernel limit at infinite width, the tangent kernel remains constant and training behaves like optimization of the network’s linearization around initialization. Jacot, Gabriel, and Hongler <a href="#references">[2]</a> derived this limit, and Chizat, Oyallon, and Bach <a href="#references">[9]</a> analyzed lazy training more broadly.</p> <p>But there is an important distinction:</p> <blockquote> <p>A preserved image shows that a particular parameter projection stayed correlated with initialization. Lazy training requires the model itself to remain well described by its linearization.</p> </blockquote> <p>The image might survive even while important features change elsewhere. Its contrast could also dominate a nontrivial update visually. Conversely, a visually damaged image does not prove useful feature learning because the weights might move through symmetries that barely change the function.</p> <p>So the image is a beautiful diagnostic, but not a complete one.</p> <hr> <h2 id="how-to-test-what-width-is-really-buying">How to test what width is really buying</h2> <p>The capacity and optimization effects can be separated more cleanly with a small experimental grid.</p> <h3 id="1-estimate-the-capacity-floor">1. Estimate the capacity floor</h3> <p>Train each small network with:</p> <ul> <li>many random restarts;</li> <li>a much longer schedule;</li> <li>Adam, SGD, and RMSprop;</li> <li>L-BFGS or another second order method, where the problem size makes it practical.</li> </ul> <p>The best loss reached across this aggressive search is an empirical upper bound on the architecture’s best representable loss. It is not proof of global optimality, but it is more informative than one Adam run.</p> <p>If the small network eventually matches the wide network, the original gap was mainly optimization under the chosen budget. If a robust gap remains across optimizers and restarts, capacity becomes the stronger explanation.</p> <h3 id="2-measure-initialization-memory">2. Measure initialization memory</h3> <p>For each layer $l$, track relative parameter displacement:</p> \[r_l(t) = \frac{\|W_l(t)-W_l(0)\|_F} {\|W_l(0)\|_F}.\] <p>Also track correlation between the initial and current flattened matrices. The image supplies an intuitive visualization and these quantities supply the measurement.</p> <h3 id="3-measure-feature-learning">3. Measure feature learning</h3> <p>Parameter movement is not enough. Compare hidden activations at initialization and after training using centered kernel alignment (CKA), feature covariance, or another measure of representation similarity. Large activation drift indicates that the network learned new internal features even if the image in its weight space remains recognizable.</p> <h3 id="4-measure-changes-in-the-tangent-kernel">4. Measure changes in the tangent kernel</h3> <p>For a manageable subset of examples, compute the empirical tangent kernel</p> \[K_t(X,X) = J_{\theta_t}(X)J_{\theta_t}(X)^\top\] <p>and report</p> \[\frac{\|K_t-K_0\|_F}{\|K_0\|_F}.\] <p>Small kernel drift, small representation drift, and small relative parameter movement together make a much stronger case for lazy training than the surviving image alone.</p> <h3 id="5-sweep-width-under-controlled-parameterization">5. Sweep width under controlled parameterization</h3> <p>The relation between width and laziness depends on scaling and parameterization, not width alone. Chizat and colleagues <a href="#references">[9]</a> emphasize the role of scaling, while Yang and Hu <a href="#references">[10]</a> show that alternative parameterizations such as $\mu$ P can retain feature learning at infinite width.</p> <p>That means a useful width sweep must specify how initialization scale and learning rate change with width. Otherwise “wider networks move less” may be an artifact of the chosen parameterization.</p> <hr> <h2 id="what-i-now-think-larger-networks-are-doing">What I now think larger networks are doing</h2> <p>The capacity explanation and the optimization explanation answer different questions:</p> <ul> <li> <strong>Capacity asks:</strong> does this architecture contain a good function?</li> <li> <strong>Optimization asks:</strong> can this training procedure find one from this initialization within the available compute?</li> <li> <strong>Implicit bias asks:</strong> among all the functions it could find, which one does the procedure prefer?</li> </ul> <p>Depth can make some functions dramatically more economical to represent. Width can enlarge the set of available features. Overparameterization can also make the training Jacobian better behaved and create many nearby routes to low loss. Then gradient descent can fit the task through small distributed updates, sometimes leaving a human face visible in the very weights it trained.</p> <p>The practical lesson is not simply “bigger models have more capacity.” It is:</p> <blockquote> <p>Modern neural networks are often made large partly so that simple optimizers can train them.</p> </blockquote> <p>The smallest network capable of representing a solution need not be the smallest network we know how to optimize. That gap between representability and reachability is where much of deep learning’s apparent inefficiency may actually be doing useful work.</p> <hr> <h2 id="references">References</h2> <ol> <li>Depue, W. (2026). <a href="https://x.com/willdepue/status/2076581570782056523?s=20" rel="external nofollow noopener" target="_blank">Tweet on initialization images remaining visible after training</a>.</li> <li>Jacot, A., Gabriel, F., &amp; Hongler, C. (2018). <a href="https://proceedings.neurips.cc/paper/2018/file/5a4be1fa34e62bb8a6ec6b91d2462f5a-Paper.pdf" rel="external nofollow noopener" target="_blank">Neural Tangent Kernel: Convergence and Generalization in Neural Networks</a>. <em>NeurIPS 2018</em>.</li> <li>Eldan, R., &amp; Shamir, O. (2016). <a href="https://arxiv.org/abs/1512.03965" rel="external nofollow noopener" target="_blank">The Power of Depth for Feedforward Neural Networks</a>. <em>COLT 2016</em>.</li> <li>Telgarsky, M. (2016). <a href="http://proceedings.mlr.press/v49/telgarsky16.pdf" rel="external nofollow noopener" target="_blank">Benefits of Depth in Neural Networks</a>. <em>COLT 2016</em>.</li> <li>Cybenko, G. (1989). <a href="https://link.springer.com/article/10.1007/BF02551274" rel="external nofollow noopener" target="_blank">Approximation by Superpositions of a Sigmoidal Function</a>. <em>Mathematics of Control, Signals, and Systems</em>, 2, 303–314.</li> <li>Liu, C., Zhu, L., &amp; Belkin, M. (2022). <a href="https://arxiv.org/abs/2003.00307" rel="external nofollow noopener" target="_blank">Loss Landscapes and Optimization in Over-parameterized Non-linear Systems and Neural Networks</a>. <em>Applied and Computational Harmonic Analysis</em>, 59, 85–116.</li> <li>Frankle, J., &amp; Carbin, M. (2019). <a href="https://arxiv.org/abs/1803.03635" rel="external nofollow noopener" target="_blank">The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks</a>. <em>ICLR 2019</em>.</li> <li>Belkin, M., Hsu, D., Ma, S., &amp; Mandal, S. (2019). <a href="https://www.pnas.org/doi/10.1073/pnas.1903070116" rel="external nofollow noopener" target="_blank">Reconciling modern machine-learning practice and the classical bias–variance trade-off</a>. <em>PNAS</em>, 116(32), 15849–15854.</li> <li>Chizat, L., Oyallon, E., &amp; Bach, F. (2019). <a href="https://papers.nips.cc/paper_files/paper/2019/file/ae614c557843b1df326cb29c57225459-Paper.pdf" rel="external nofollow noopener" target="_blank">On Lazy Training in Differentiable Programming</a>. <em>NeurIPS 2019</em>.</li> <li>Yang, G., &amp; Hu, E. J. (2021). <a href="https://proceedings.mlr.press/v139/yang21c/yang21c.pdf" rel="external nofollow noopener" target="_blank">Tensor Programs IV: Feature Learning in Infinite-Width Neural Networks</a>. <em>ICML 2021</em>.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/gradient-descent-hidden-tax/">Gradient Descent's Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/curvebench/">CurveBench: how neural networks learn curves</a> </li> </ul> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Rasa Khosrowshahi. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MVVSKJBN0"></script> <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-9MVVSKJBN0");
+</script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-cv",
+          title: "cv",
+          description: "Academic CV and professional experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "nav-experience",
+          title: "experience",
+          description: "Research, teaching, and industry experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/experience/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "Research projects in machine learning and optimization.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-publications",
+          title: "publications",
+          description: "Selected publications and research papers.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/publications/";
+          },
+        },{id: "nav-service",
+          title: "service",
+          description: "Academic service, reviewing, conference work, mentorship, and outreach.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/service/";
+          },
+        },{id: "nav-teaching",
+          title: "teaching",
+          description: "Teaching assistantships and course support.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/teaching/";
+          },
+        },{id: "post-why-bigger-neural-networks-can-be-easier-to-train",
+        
+          title: "Why Bigger Neural Networks Can Be Easier to Train",
+        
+        description: "Bigger networks do not only represent more functions. Overparameterization can make gradient descent&#39;s job easier and leave surprising traces of initialization behind.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/why-bigger-networks-are-easier-to-train/";
+          
+        },
+      },{id: "post-gradient-descent-39-s-hidden-tax-rethinking-how-we-compare-it-to-gradient-free-methods",
+        
+          title: "Gradient Descent&#39;s Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods",
+        
+        description: "Every GD step costs roughly 3× a gradient-free forward pass, so matching step counts isn&#39;t a fair benchmark. Match on FLOPs instead.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/gradient-descent-hidden-tax/";
+          
+        },
+      },{id: "post-curvebench-how-neural-networks-learn-curves",
+        
+          title: "CurveBench: how neural networks learn curves",
+        
+        description: "Watching MLPs learn 1D curves. Width, optimizer, and activation change what the prediction looks like as training unfolds.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/curvebench/";
+          
+        },
+      },{id: "news-our-work-enhancing-image-retrieval-through-optimal-barcode-representation-https-www-nature-com-articles-s41598-025-14576-x-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-by-scientific-reports",
+          title: 'Our work [Enhancing image retrieval through optimal barcode representation](https://www.nature.com/articles/s41598-025-14576-x){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-multi-objective-reference-aligned-machine-unlearning-https-arxiv-org-abs-2606-00399-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-at-canadian-ai-2026",
+          title: 'Our work [Multi-Objective Reference-Aligned Machine Unlearning](https://arxiv.org/abs/2606.00399){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;&amp;quot;} was...',
+          description: "",
+          section: "News",},{id: "news-our-work-center-based-sampling-in-optimization-and-machine-learning-a-theory-and-review-https-github-com-rkhosrowshahi-cbs-theory-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-the-cec-theory-session-at-wcci-2026",
+          title: 'Our work [Center-based Sampling in Optimization and Machine Learning: A Theory and Review](https://github.com/rkhosrowshahi/cbs-theory){:...',
+          description: "",
+          section: "News",},{id: "news-we-are-thrilled-to-announce-the-acceptance-of-torchjd-https-torchjd-org-stable-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-into-the-pytorch-ecosystem-https-github-com-pytorch-fdn-ecosystem-issues-66-issuecomment-4556222998-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot",
+          title: 'We are thrilled to announce the acceptance of [TorchJD](https://torchjd.org/stable/){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "projects-block-differential-evolution",
+          title: 'Block Differential Evolution',
+          description: "Differential evolution for large-scale global optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/block-differential-evolution/";
+            },},{id: "projects-clustering-center-based-differential-evolution",
+          title: 'Clustering Center-based Differential Evolution',
+          description: "Center-based sampling for differential evolution.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/clustering-center-based-differential-evolution/";
+            },},{id: "projects-curvebench",
+          title: 'CurveBench',
+          description: "Watch how MLPs learn 1D curves. Width, optimizer, and activation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/curvebench/";
+            },},{id: "projects-brock-presentation-template",
+          title: 'Brock Presentation Template',
+          description: "The &quot;Brock University Presentation Slides Template in LaTeX&quot; project aims to develop a professional, standardized template for creating presentation slides using LaTeX. This template is tailored specifically for Brock University, incorporating the university&#39;s branding elements such as colors, logos, and typography.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-brock-presentation-template/";
+            },},{id: "projects-cbs-theory",
+          title: 'Cbs Theory',
+          description: "GitHub repository for cbs-theory.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cbs-theory/";
+            },},{id: "projects-ccde-wcci2022",
+          title: 'CCDE-WCCI2022',
+          description: "Source code of the Clustering Center-based Differential Evolution algorithm for CEC&#39;2017 bound-constrained optimization benchmarks.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-ccde-wcci2022/";
+            },},{id: "projects-cec2013lsgo",
+          title: 'cec2013lsgo',
+          description: "Pure-Python CEC&#39;2013 Large-Scale Global Optimization benchmark implementation with arbitrary-dimensional, seed-based benchmark generation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cec2013lsgo/";
+            },},{id: "projects-clustering-center-based",
+          title: 'Clustering Center Based',
+          description: "GitHub repository for clustering-center-based.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-clustering-center-based/";
+            },},{id: "projects-deepfeaturebarcodingcga",
+          title: 'DeepFeatureBarcodingCGA',
+          description: "GitHub repository for DeepFeatureBarcodingCGA.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-deep-feature-barcoding-cga/";
+            },},{id: "projects-drawopt-mern",
+          title: 'Drawopt Mern',
+          description: "GitHub repository for drawopt-mern.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-drawopt-mern/";
+            },},{id: "projects-efun-city-of-toronto",
+          title: 'Efun City Of Toronto',
+          description: "City of Toronto efun course registration bot written with Python Selenium",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-efun-city-of-toronto/";
+            },},{id: "projects-evonas",
+          title: 'EvoNAS',
+          description: "GitHub repository for EvoNAS.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-nas/";
+            },},{id: "projects-evosubspaceoptimization",
+          title: 'EvoSubspaceOptimization',
+          description: "GitHub repository for EvoSubspaceOptimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-subspace-optimization/";
+            },},{id: "projects-evokge",
+          title: 'Evokge',
+          description: "GitHub repository for evokge.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evokge/";
+            },},{id: "projects-evonn",
+          title: 'Evonn',
+          description: "GitHub repository for evonn.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evonn/";
+            },},{id: "projects-mo-raul",
+          title: 'MO-RAUL',
+          description: "GitHub repository for MO-RAUL.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-raul/";
+            },},{id: "projects-mo-vae",
+          title: 'MO-VAE',
+          description: "GitHub repository for MO-VAE.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-vae/";
+            },},{id: "projects-torchjd",
+          title: 'torchjd',
+          description: "A PyTorch library for Jacobian descent that supports optimization of neural networks with multiple losses.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-torchjd/";
+            },},{id: "projects-ranking-center-based-nsga-ii",
+          title: 'Ranking Center-based NSGA-II',
+          description: "Center-based sampling for multi-objective optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ranking-center-based-nsga-ii/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-spring-2026/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-winter-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2025/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-spring-2025/";
+            },},{id: "teachings-cosc-4p86-machine-learning",
+          title: 'COSC 4P86, Machine Learning',
+          description: "Graduate teaching assistantship for Machine Learning at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p86-machine-learning-winter-2025/";
+            },},{id: "teachings-cosc-4p96-topics-in-computational-intelligence",
+          title: 'COSC 4P96, Topics in Computational Intelligence',
+          description: "Instructor for an undergraduate computational intelligence course at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p96-topics-in-computational-intelligence/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2024/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2025/";
+            },},{id: "teachings-designing-algorithms",
+          title: 'Designing Algorithms',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-designing-algorithms-fall-2022/";
+            },},{id: "teachings-machine-learning-and-data-mining",
+          title: 'Machine Learning and Data Mining',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-machine-learning-and-data-mining-winter-2023/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2022/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2023/";
+            },},{id: "teachings-principles-of-software-and-requirements-engineering",
+          title: 'Principles of Software and Requirements Engineering',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-principles-of-software-and-requirements-engineering-winter-2023/";
+            },},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing", "_blank");
+        },
+      },{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%72%6B%68%6F%73%72%6F%77%73%68%61%68%6C%69@%62%72%6F%63%6B%75.%63%61", "_blank");
+        },
+      },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=yvSevxQAAAAJ", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0000-0002-5130-8203", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/rkhosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-leetcode',
+        title: 'LeetCode',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://leetcode.com/u/Rasak/", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/rasa-khosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-x',
+        title: 'X',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://twitter.com/rkhosrowshahli", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
