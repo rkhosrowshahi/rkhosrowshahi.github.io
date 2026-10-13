@@ -1,15 +1,16 @@
 ---
-layout: page
+layout: post
 title: "Compressing Neural Networks Without Looking Inside Them"
-description: R. Khosrowshahli, S. Rahnamayan, and B. Ombuki-Berman. A Structure-Agnostic Multi-Objective Evolutionary Weight-Sharing Compression Framework for Deep Neural Networks. IEEE Transactions on Big Data (accepted).
-permalink: /publications/ubecsq/
-nav: false
+date: 2026-10-12 00:00:00
+description: Our IEEE Transactions on Big Data paper shares one codebook across every weight of a pretrained network, merges it with an exact dynamic program, and searches just two numbers. Along the way, the number of codewords turns out to be the wrong thing to minimize.
+tags: research machine-learning neural-networks compression quantization multi-objective-optimization evolutionary-computation
+categories: research
+thumbnail: assets/img/ubecsq/pareto-fronts.png
+related_posts: true
 mermaid:
   enabled: true
   zoomable: true
 ---
-
-[Code](https://github.com/rkhosrowshahi/EvoDeepQuantization) · [Earlier preprint (arXiv)](https://arxiv.org/abs/2501.03095) · [All publications]({{ '/publications/' | relative_url }})
 
 ## TL;DR
 
