@@ -85,7 +85,7 @@ This gives a more precise version of "larger networks have more escape routes":
 
 Under suitable assumptions, theory makes parts of this story rigorous. Wide networks can satisfy conditions that guarantee convergence of gradient descent to zero training loss (see the Polyak–Łojasiewicz (PL)$^*$ analysis by Liu _et al._ [[6]](#references)). This does not mean that every wide network has a globally benign landscape, or that Adam is automatically optimal. It means overparameterization can change the geometry in ways that make gradient based optimization tractable.
 
-> **Remark (PL and PL$^*$).** The PL condition says that near the set of minimizers, a small gradient already implies a small excess loss:
+> **Remark (PL and PL$^\*$).** The PL condition says that near the set of minimizers, a small gradient already implies a small excess loss:
 >
 > $$
 > \|\nabla L(\theta)\|^2 \;\ge\; 2\mu \bigl(L(\theta) - L^*\bigr)
