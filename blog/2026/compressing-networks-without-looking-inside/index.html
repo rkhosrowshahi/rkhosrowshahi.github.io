@@ -1,1 +1,402 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <title>Moved</title> <link rel="canonical" href="/publications/ubecsq/"> <meta name="robots" content="noindex"> <meta http-equiv="refresh" content="0; url=/publications/ubecsq/"> </head> <body> <p>This article moved to <a href="/publications/ubecsq/">/publications/ubecsq/</a>.</p> </body> </html>
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Compressing Neural Networks Without Looking Inside Them | Rasa Khosrowshahi </title> <meta name="author" content="Rasa Khosrowshahi"> <meta name="description" content="Our IEEE Transactions on Big Data paper shares one codebook across every weight of a pretrained network, merges it with an exact dynamic program, and searches just two numbers. Along the way, the number of codewords turns out to be the wrong thing to minimize."> <meta name="keywords" content="machine learning, artificial intelligence, optimization, academic website, portfolio"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/nn_logo.png?v=5f7cdbb6e6298876196866741edd5e5e"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://rkhosrowshahi.github.io/blog/2026/compressing-networks-without-looking-inside/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Rasa</span> Khosrowshahi </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item "> <a class="nav-link" href="/experience/">experience </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">publications </a> </li> <li class="nav-item "> <a class="nav-link" href="/service/">service </a> </li> <li class="nav-item "> <a class="nav-link" href="/teaching/">teaching </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Compressing Neural Networks Without Looking Inside Them</h1> <p class="post-meta"> Created on October 12, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/research"> <i class="fa-solid fa-hashtag fa-sm"></i> research</a>   <a href="/blog/tag/machine-learning"> <i class="fa-solid fa-hashtag fa-sm"></i> machine-learning</a>   <a href="/blog/tag/neural-networks"> <i class="fa-solid fa-hashtag fa-sm"></i> neural-networks</a>   <a href="/blog/tag/compression"> <i class="fa-solid fa-hashtag fa-sm"></i> compression</a>   <a href="/blog/tag/quantization"> <i class="fa-solid fa-hashtag fa-sm"></i> quantization</a>   <a href="/blog/tag/multi-objective-optimization"> <i class="fa-solid fa-hashtag fa-sm"></i> multi-objective-optimization</a>   <a href="/blog/tag/evolutionary-computation"> <i class="fa-solid fa-hashtag fa-sm"></i> evolutionary-computation</a>   ·   <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> research</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="tldr">TL;DR</h2> <p>A trained network is mostly a long list of 32-bit floats. Weight sharing stores it more cheaply: a small <strong>codebook</strong> of shared values, plus, for every weight, the index of the codeword it uses. The usual recipe builds the codebook layer by layer with K-means, fine-tunes it afterwards, and judges the result by how few codewords it needs.</p> <p>In our paper, accepted to <em>IEEE Transactions on Big Data</em> <a href="#references">[1]</a>, we skip all of that. <strong>UB-ECSQ-NSGA2</strong> flattens every weight into one vector, bins it on a uniform grid, merges neighboring bins with an exact dynamic program that anticipates what Huffman coding will charge, and lets NSGA-II search just two numbers. There is no retraining, no gradient, and no use of the architecture: the same code compresses ResNets, VGG16-BN and a Vision Transformer.</p> <p>Within a 1% drop in accuracy, the compression ratio (CR) reaches 20.8 on CIFAR-10, 10.4–12.3 on the ImageNet ResNets, 18.4 on VGG16-BN and 9.0 on ViT-B/16. In each setting that is higher than every baseline we evaluated. The code is on <a href="https://github.com/rkhosrowshahi/EvoDeepQuantization" rel="external nofollow noopener" target="_blank">GitHub</a>.</p> <p>The most useful lesson is not about the search at all:</p> <blockquote> <p>When the indices are entropy coded, the number of codewords is the wrong thing to minimize.</p> </blockquote> <hr> <h2 id="weight-sharing-in-one-paragraph">Weight sharing in one paragraph</h2> <p>Take a network with $N$ weights. Weight sharing replaces them by $K \ll N$ shared values, the <strong>codewords</strong>, and stores for each weight the index of its codeword. The codebook costs $32K$ bits. The index stream costs $\lceil \log_2 K \rceil$ bits per weight if every index has the same width. If the indices are Huffman coded <a href="#references">[2]</a>, codeword $i$ gets a code of $b_i$ bits and</p> \[\text{CR} = \frac{32\,N}{32\,K + \sum_{i=1}^{K} b_i\,\lvert C_i \rvert},\] <p>where $\lvert C_i \rvert$ is the number of weights that share codeword $i$. With $N$ in the millions and $K$ in the hundreds, the codebook is negligible. <strong>The index stream is the model.</strong></p> <p>Deep Compression <a href="#references">[3]</a> made this recipe popular: prune, cluster each layer’s weights with K-means, retrain the shared values, then Huffman code the indices.</p> <hr> <h2 id="three-habits-worth-questioning">Three habits worth questioning</h2> <p>Most weight-sharing pipelines share three habits.</p> <ol> <li> <strong>Per-layer codebooks.</strong> K-means costs $O(NKTR)$ for $T$ iterations and $R$ restarts, and it has to be refit for every $K$. To stay tractable, it is run layer by layer. That needs the layer boundaries and tensor shapes, which a model released as a black box does not expose. It also turns the choice of $K$ into one choice per layer, a search space that grows exponentially with depth. Dupuis <em>et al.</em> <a href="#references">[4]</a> tame it with a two-level search.</li> <li> <strong>Retraining.</strong> Fine-tuning the shared values recovers accuracy, but it is a second, expensive optimization whose budget is not known in advance.</li> <li> <strong>Counting codewords.</strong> $K$ is swept over powers of two, because a fixed-width index costs $\lceil \log_2 K \rceil$ bits, and fewer codewords is read as more compression.</li> </ol> <p>UB-ECSQ-NSGA2 drops all three.</p> <hr> <h2 id="step-1-one-vector-equal-width-bins">Step 1: one vector, equal-width bins</h2> <p>Flatten every weight of the network (everything except biases) into a single vector. No layer boundaries, tensor shapes or channel counts are used. Cut the range of that vector into $K_0$ equal-width bins, shifted so that zero sits exactly at the center of a bin. Represent every occupied bin by <strong>the mean of the weights that fell into it</strong>, and drop the empty bins, leaving $\tilde K \le K_0$ codewords.</p> <p>This is <strong>Uniform Binning Quantization (UBQ)</strong>. It takes one pass over the weights, $O(N)$, for any $K_0$, so trying a new bin count costs nothing like refitting K-means. The zero anchoring matters because most trained weights sit near zero. The bin containing zero holds the largest share of them, and centering it keeps its mean near zero for every $K_0$.</p> <p>Equal-width bins look naive next to K-means, which places its codewords where the weights are. Yet UBQ alone, with no merging and no search, already has a larger hypervolume than global K-means in all eight of our settings. The next section explains why.</p> <hr> <h2 id="step-2-count-bits-not-codewords">Step 2: count bits, not codewords</h2> <p>Here are three codebooks for ResNet-18 on CIFAR-10. All three keep about 94.8% calibration accuracy (the uncompressed model scores 95.10%):</p> <table> <thead> <tr> <th>Codebook</th> <th style="text-align: right">Codewords</th> <th style="text-align: right">Accuracy</th> <th style="text-align: right">Stored bits per weight</th> <th style="text-align: right">CR</th> </tr> </thead> <tbody> <tr> <td>K-means, $K = 128$</td> <td style="text-align: right">128</td> <td style="text-align: right">94.78%</td> <td style="text-align: right">5.28</td> <td style="text-align: right">6.1</td> </tr> <tr> <td>UBQ, $K_0 = 256$</td> <td style="text-align: right">175</td> <td style="text-align: right">94.84%</td> <td style="text-align: right">2.16</td> <td style="text-align: right">14.8</td> </tr> <tr> <td>UB-ECSQ, $K_0 = 255$, $\rho = 0.64$</td> <td style="text-align: right">112</td> <td style="text-align: right">94.82%</td> <td style="text-align: right">1.57</td> <td style="text-align: right">20.4</td> </tr> </tbody> </table> <p>UBQ uses <em>more</em> codewords than K-means and stores the network in 2.4 times fewer bits. Figure 1 shows why.</p> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/ubecsq/occupancy-480.webp 480w,/assets/img/ubecsq/occupancy-800.webp 800w,/assets/img/ubecsq/occupancy-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/ubecsq/occupancy.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" alt="Share of weights per codeword, sorted from most to least used, for the three codebooks" data-zoomable="" loading="lazy" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <div class="caption"> Figure 1. Share of the 11.2M weights that use each codeword, sorted from the most to the least used, for the three codebooks in the table. The vertical axis is logarithmic; the floor is a single weight. </div> <p>K-means places its codewords to minimize squared error, so it spends them where the weights are dense. The crowded region around zero gets split among many codewords, and each one ends up serving a modest share of the weights. Its most-used codeword holds only 4.6% of the weights, and it takes 41 codewords to cover 90% of them. A flat occupancy like this is the worst case for Huffman coding, because almost every index needs a long code.</p> <p>Equal-width bins do the opposite. The single bin around zero holds 50% of all weights, five bins cover 90%, and 151 of the 175 bins hold less than 0.01% each. An index used that often gets a one-bit Huffman code, and the long codes go to the rare tail bins. Merging (Step 3) pushes this further: after it, one codeword holds 69% of the weights and three cover 90%.</p> <p>So the stored size is governed by the <strong>entropy of the occupancy</strong>, not by the number of codewords. Entropy-constrained quantization <a href="#references">[5]</a> is built on exactly this observation, and it is what the next step exploits.</p> <hr> <h2 id="step-3-merge-neighbors-exactly">Step 3: merge neighbors, exactly</h2> <p>After UBQ, many neighboring bins are close to redundant: two bins with nearly the same mean, or a tail bin holding a handful of weights. Merging two of them changes two things. It adds squared error, because the merged weights now share one value. It also changes the rate, the entropy of the occupancy, which is what Huffman coding pays.</p> <p><strong>Entropy-Constrained Scalar Quantization (ECSQ)</strong> picks a partition $\pi$ of the $\tilde K$ ordered bins into contiguous groups that minimizes</p> \[J(\pi) = \mathrm{SE}(\pi) + \lambda\, R(\pi).\] <p>Both terms add up over groups and depend only on each bin’s count $n_b$ and mean $c_b$. With prefix sums $M_j = \sum_{b \le j} n_b$, $S_j = \sum_{b \le j} n_b c_b$ and $T_j = \sum_{b \le j} n_b c_b^2$, merging bins $i+1$ through $j$ costs</p> \[\mathrm{SE}_{i+1:j} = (T_j - T_i) - \frac{(S_j - S_i)^2}{M_j - M_i}, \qquad R_{i+1:j} = -(M_j - M_i)\log_2 \frac{M_j - M_i}{N}.\] <p>Because the groups are contiguous, a dynamic program finds the exact optimum:</p> \[\mathrm{dp}_j = \min_{0 \le i &lt; j} \; \mathrm{dp}_i + \mathrm{SE}_{i+1:j} + \lambda R_{i+1:j}.\] <p>It runs in $O(\tilde K^2)$, which is microseconds for a few hundred bins. It needs no forward pass, no data and no gradient.</p> <p>Sweeping $\lambda$ over a grid yields a <strong>merge ladder</strong>: one partition for every codebook size the trade-off can reach. The search never picks $\lambda$ directly. It asks for $K = \max(1, \mathrm{round}(\rho \tilde K))$ codewords, so $\rho = 1$ means no merging, and takes the nearest rung of the ladder.</p> <hr> <h2 id="step-4-search-two-numbers">Step 4: search two numbers</h2> <p>A candidate compressed model is fully described by $x = (K_0, \rho)$: two variables, however large the network.</p> <pre><code class="language-mermaid">flowchart LR
+    A["Pretrained network"] --&gt; B["Flatten all weights&lt;br/&gt;into one vector"]
+    B --&gt; C["UBQ&lt;br/&gt;K0 equal-width bins"]
+    C --&gt; D["ECSQ merge&lt;br/&gt;K = round(ρ·K̃) codewords"]
+    D --&gt; E["Huffman-coded&lt;br/&gt;index stream"]
+    E --&gt; F["f1 = 1 − accuracy&lt;br/&gt;f2 = 1 / CR"]
+    F --&gt; G["NSGA-II over (K0, ρ)"]
+    G -- "next candidates" --&gt; C
+    G --&gt; H["Pareto front of&lt;br/&gt;compressed models"]
+</code></pre> <p>Evaluating a candidate takes four steps:</p> <ol> <li>Bin the weights at $K_0$.</li> <li>Take the rung of the merge ladder closest to $\rho \tilde K$.</li> <li>Run one forward pass over a held-out calibration split of 5,000 images, which gives $f_1 = 1 - \text{accuracy}$.</li> <li>Run one Huffman pass, which gives $f_2 = 1/\text{CR}$.</li> </ol> <p>NSGA-II <a href="#references">[6]</a>, as implemented in pymoo <a href="#references">[7]</a>, evolves a population of 100 candidates for 10 generations on CIFAR and 15 on ImageNet. The result is not a single model but a Pareto front: you pick the point that fits your memory or accuracy budget.</p> <p>The range of $K_0$ is not tuned by hand either. A short warm-up bisects $\log_2 K_0$ with UBQ alone and sets two edges:</p> <ul> <li> <strong>The aggressive edge</strong> is the largest $K_0$ that still loses more than 50% of the accuracy. It sits deliberately on the bad side of the accuracy cliff, so that the search can still reach very compressed points just past it.</li> <li> <strong>The other edge</strong> is the smallest $K_0$ that loses at most 0.5%.</li> </ul> <p>For ResNet-18 on CIFAR-10, this gives $K_0 \in [64, 256]$. The whole CIFAR search takes about half an hour on one GPU.</p> <hr> <h2 id="results">Results</h2> <p>We compared against six baselines on the same checkpoints and calibration splits, with no pruning and no fine-tuning anywhere:</p> <ul> <li> <strong>K-means</strong> in the style of Deep Compression <a href="#references">[3]</a>, with one global codebook.</li> <li> <strong>Uniform Quantization, Hessian-weighted K-means and Iterative ECSQ</strong> from Choi <em>et al.</em> <a href="#references">[8]</a>.</li> <li> <strong>GPTQ</strong> <a href="#references">[9]</a>.</li> <li> <strong>The layer-wise search of Dupuis <em>et al.</em></strong> <a href="#references">[4]</a>.</li> </ul> <div class="row mt-3"> <div class="col-sm mt-3 mt-md-0"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/ubecsq/pareto-fronts-480.webp 480w,/assets/img/ubecsq/pareto-fronts-800.webp 800w,/assets/img/ubecsq/pareto-fronts-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/ubecsq/pareto-fronts.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" alt="Calibration accuracy versus compression ratio for UB-ECSQ-NSGA2 and five baselines on CIFAR-10 ResNet-18 and ImageNet ResNet-50" data-zoomable="" loading="lazy" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <div class="caption"> Figure 2. Calibration accuracy against compression ratio, zoomed to the region near the uncompressed accuracy. The blue line is the median over five search seeds of the best accuracy reachable at each CR, and the band spans the best and worst seed. Baselines connect their evaluated points in order of CR. Iterative ECSQ is left out for readability: its only accurate point has a CR of about 4. </div> <p>The table gives the compression ratio within a 1% accuracy drop, as in the paper’s Tables I–III:</p> <table> <thead> <tr> <th>Dataset · model</th> <th style="text-align: right">Uncompressed acc.</th> <th>Best baseline</th> <th style="text-align: right">UB-ECSQ-NSGA2</th> </tr> </thead> <tbody> <tr> <td>CIFAR-10 · ResNet-18</td> <td style="text-align: right">95.10%</td> <td>16.4 (Dupuis <em>et al.</em>)</td> <td style="text-align: right"> <strong>20.8</strong> ± 0.3</td> </tr> <tr> <td>CIFAR-100 · ResNet-18</td> <td style="text-align: right">76.66%</td> <td>12.7 (Dupuis <em>et al.</em>)</td> <td style="text-align: right"> <strong>12.9</strong> ± 0.2</td> </tr> <tr> <td>ImageNet · ResNet-18</td> <td style="text-align: right">69.58%</td> <td>8.6 (Uniform Quant.)</td> <td style="text-align: right"> <strong>10.5</strong> ± 0.1</td> </tr> <tr> <td>ImageNet · ResNet-34</td> <td style="text-align: right">73.46%</td> <td>9.0 (Uniform Quant.)</td> <td style="text-align: right"> <strong>10.9</strong> ± 0.1</td> </tr> <tr> <td>ImageNet · ResNet-50</td> <td style="text-align: right">76.34%</td> <td>8.0 (Uniform Quant.)</td> <td style="text-align: right"> <strong>10.4</strong> ± 0.1</td> </tr> <tr> <td>ImageNet · ResNet-101</td> <td style="text-align: right">77.12%</td> <td>9.7 (Hessian K-means)</td> <td style="text-align: right"> <strong>12.3</strong> ± 0.0</td> </tr> <tr> <td>ImageNet · VGG16-BN</td> <td style="text-align: right">72.92%</td> <td>16.8 (Dupuis <em>et al.</em>)</td> <td style="text-align: right"> <strong>18.4</strong> ± 0.1</td> </tr> <tr> <td>ImageNet · ViT-B/16</td> <td style="text-align: right">80.76%</td> <td>8.6 (Hessian K-means)</td> <td style="text-align: right"> <strong>9.0</strong> ± 0.0</td> </tr> </tbody> </table> <p>Over the whole front, UB-ECSQ-NSGA2 has the highest hypervolume in all eight settings. It does not win every cell, though. Across the 48 accuracy targets of Tables I–III it gives the highest CR in 43. The exceptions are:</p> <ul> <li>Dupuis <em>et al.</em> at the two tightest CIFAR-100 targets.</li> <li>Dupuis <em>et al.</em> on VGG16-BN at 2% and 5% drops.</li> <li>Uniform Quantization at the tightest ResNet-34 target.</li> </ul> <p>GPTQ deserves a separate note. It stores fixed-width integer codes, so it never exploits a skewed occupancy and never reaches the highest CR at any target. Its 2-bit points keep between 15% and 61% accuracy on the ImageNet CNNs. But it buys something UB-ECSQ does not: faster integer arithmetic at inference time.</p> <hr> <h2 id="what-it-does-not-do">What it does not do</h2> <ul> <li> <strong>It saves storage and transmission, not compute.</strong> The compressed model must be Huffman-decoded and its codewords looked up before inference.</li> <li> <strong>It needs a labeled calibration split</strong> and one forward pass per candidate.</li> <li> <strong>Results vary more across architectures than across depths.</strong> Within a 1% drop, the CR ranges from 9.0 on ViT-B/16 to 18.4 on VGG16-BN, but only from 10.4 to 12.3 across the ResNets. The bin width is set by the extreme weights, so our conjecture is that large outliers hurt the transformer. Clipping or separately storing them is the natural next experiment, and a first step toward language models, where such outliers are common.</li> <li> <strong>It does not prune.</strong> Pruning composes with it, since a sparse network is still a vector of numbers, but we have not measured the combination.</li> </ul> <hr> <h2 id="try-it">Try it</h2> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/rkhosrowshahi/EvoDeepQuantization.git
+<span class="nb">cd </span>EvoDeepQuantization
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+python main.py <span class="nt">--config</span> configs/cifar10/resnet18/seed1.yaml
+</code></pre></div></div> <p>This downloads CIFAR-10 and the pretrained checkpoint, runs the search, and writes <code class="language-plaintext highlighter-rouge">final_pareto_front.csv</code>, one compressed model per row. Every setting and seed in the paper has its own config, and every baseline runs with one command. The <a href="https://github.com/rkhosrowshahi/EvoDeepQuantization#readme" rel="external nofollow noopener" target="_blank">README</a> has the details.</p> <hr> <h2 id="references">References</h2> <ol> <li>Khosrowshahli, R., Rahnamayan, S., &amp; Ombuki-Berman, B. (2026). A Structure-Agnostic Multi-Objective Evolutionary Weight-Sharing Compression Framework for Deep Neural Networks. <em>IEEE Transactions on Big Data</em> (accepted). <a href="https://github.com/rkhosrowshahi/EvoDeepQuantization" rel="external nofollow noopener" target="_blank">Code</a> · <a href="https://arxiv.org/abs/2501.03095" rel="external nofollow noopener" target="_blank">earlier preprint</a>.</li> <li>Huffman, D. A. (1952). <a href="https://doi.org/10.1109/JRPROC.1952.273898" rel="external nofollow noopener" target="_blank">A Method for the Construction of Minimum-Redundancy Codes</a>. <em>Proceedings of the IRE</em>, 40(9), 1098–1101.</li> <li>Han, S., Mao, H., &amp; Dally, W. J. (2016). <a href="https://arxiv.org/abs/1510.00149" rel="external nofollow noopener" target="_blank">Deep Compression: Compressing Deep Neural Networks with Pruning, Trained Quantization and Huffman Coding</a>. <em>ICLR 2016</em>.</li> <li>Dupuis, E., Novo, D., O’Connor, I., &amp; Bosio, A. (2022). A Heuristic Exploration of Retraining-Free Weight-Sharing for CNN Compression. <em>ASP-DAC 2022</em>. <a href="https://github.com/e-dupuis/retraining-free-weight-sharing" rel="external nofollow noopener" target="_blank">Code</a>.</li> <li>Chou, P. A., Lookabaugh, T., &amp; Gray, R. M. (1989). <a href="https://doi.org/10.1109/29.17498" rel="external nofollow noopener" target="_blank">Entropy-Constrained Vector Quantization</a>. <em>IEEE Transactions on Acoustics, Speech, and Signal Processing</em>, 37(1), 31–42.</li> <li>Deb, K., Pratap, A., Agarwal, S., &amp; Meyarivan, T. (2002). <a href="https://doi.org/10.1109/4235.996017" rel="external nofollow noopener" target="_blank">A Fast and Elitist Multiobjective Genetic Algorithm: NSGA-II</a>. <em>IEEE Transactions on Evolutionary Computation</em>, 6(2), 182–197.</li> <li>Blank, J., &amp; Deb, K. (2020). <a href="https://doi.org/10.1109/ACCESS.2020.2990567" rel="external nofollow noopener" target="_blank">pymoo: Multi-Objective Optimization in Python</a>. <em>IEEE Access</em>, 8, 89497–89509.</li> <li>Choi, Y., El-Khamy, M., &amp; Lee, J. (2017). <a href="https://arxiv.org/abs/1612.01543" rel="external nofollow noopener" target="_blank">Towards the Limit of Network Quantization</a>. <em>ICLR 2017</em>.</li> <li>Frantar, E., Ashkboos, S., Hoefler, T., &amp; Alistarh, D. (2023). <a href="https://arxiv.org/abs/2210.17323" rel="external nofollow noopener" target="_blank">GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</a>. <em>ICLR 2023</em>.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/why-bigger-networks-are-easier-to-train/">Why Bigger Neural Networks Can Be Easier to Train</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/gradient-descent-hidden-tax/">Gradient Descent's Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/curvebench/">CurveBench: how neural networks learn curves</a> </li> </ul> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Rasa Khosrowshahi. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.7.0/dist/mermaid.min.js" integrity="sha256-TtLOdUA8mstPoO6sGvHIGx2ceXrrX4KgIItO06XOn8A=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js" integrity="sha256-1rA678n2xEx7x4cTZ5x4wpUCj6kUMZEZ5cxLSVSFWxw=" crossorigin="anonymous"></script> <script defer src="/assets/al_charts/js/mermaid-setup.js" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://www.googletagmanager.com/gtag/js?id=G-9MVVSKJBN0"></script> <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-9MVVSKJBN0");
+</script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-cv",
+          title: "cv",
+          description: "Academic CV and professional experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "nav-experience",
+          title: "experience",
+          description: "Research, teaching, and industry experience.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/experience/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "Research projects in machine learning and optimization.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-publications",
+          title: "publications",
+          description: "Selected publications and research papers.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/publications/";
+          },
+        },{id: "nav-service",
+          title: "service",
+          description: "Academic service, reviewing, conference work, mentorship, and outreach.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/service/";
+          },
+        },{id: "nav-teaching",
+          title: "teaching",
+          description: "Teaching assistantships and course support.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/teaching/";
+          },
+        },{id: "post-compressing-neural-networks-without-looking-inside-them",
+        
+          title: "Compressing Neural Networks Without Looking Inside Them",
+        
+        description: "Our IEEE Transactions on Big Data paper shares one codebook across every weight of a pretrained network, merges it with an exact dynamic program, and searches just two numbers. Along the way, the number of codewords turns out to be the wrong thing to minimize.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/compressing-networks-without-looking-inside/";
+          
+        },
+      },{id: "post-why-bigger-neural-networks-can-be-easier-to-train",
+        
+          title: "Why Bigger Neural Networks Can Be Easier to Train",
+        
+        description: "Bigger networks do not only represent more functions. Overparameterization can make gradient descent&#39;s job easier and leave surprising traces of initialization behind.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/why-bigger-networks-are-easier-to-train/";
+          
+        },
+      },{id: "post-gradient-descent-39-s-hidden-tax-rethinking-how-we-compare-it-to-gradient-free-methods",
+        
+          title: "Gradient Descent&#39;s Hidden Tax: Rethinking How We Compare It to Gradient-Free Methods",
+        
+        description: "Every GD step costs roughly 3× a gradient-free forward pass, so matching step counts isn&#39;t a fair benchmark. Match on FLOPs instead.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/gradient-descent-hidden-tax/";
+          
+        },
+      },{id: "post-curvebench-how-neural-networks-learn-curves",
+        
+          title: "CurveBench: how neural networks learn curves",
+        
+        description: "Watching MLPs learn 1D curves. Width, optimizer, and activation change what the prediction looks like as training unfolds.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/curvebench/";
+          
+        },
+      },{id: "news-our-work-enhancing-image-retrieval-through-optimal-barcode-representation-https-www-nature-com-articles-s41598-025-14576-x-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-by-scientific-reports",
+          title: 'Our work [Enhancing image retrieval through optimal barcode representation](https://www.nature.com/articles/s41598-025-14576-x){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-multi-objective-reference-aligned-machine-unlearning-https-arxiv-org-abs-2606-00399-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-at-canadian-ai-2026",
+          title: 'Our work [Multi-Objective Reference-Aligned Machine Unlearning](https://arxiv.org/abs/2606.00399){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline; text-underline-offset: 0.12em;&amp;quot;} was...',
+          description: "",
+          section: "News",},{id: "news-our-work-center-based-sampling-in-optimization-and-machine-learning-a-theory-and-review-https-github-com-rkhosrowshahi-cbs-theory-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-the-cec-theory-session-at-wcci-2026",
+          title: 'Our work [Center-based Sampling in Optimization and Machine Learning: A Theory and Review](https://github.com/rkhosrowshahi/cbs-theory){:...',
+          description: "",
+          section: "News",},{id: "news-we-are-thrilled-to-announce-the-acceptance-of-torchjd-https-torchjd-org-stable-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-into-the-pytorch-ecosystem-https-github-com-pytorch-fdn-ecosystem-issues-66-issuecomment-4556222998-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot",
+          title: 'We are thrilled to announce the acceptance of [TorchJD](https://torchjd.org/stable/){: style=&amp;quot;color: var(--global-theme-color); text-decoration: underline;...',
+          description: "",
+          section: "News",},{id: "news-our-work-a-structure-agnostic-multi-objective-evolutionary-weight-sharing-compression-framework-for-deep-neural-networks-post-url-2026-10-12-compressing-networks-without-looking-inside-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-was-accepted-to-ieee-transactions-on-big-data-the-code-https-github-com-rkhosrowshahi-evodeepquantization-style-quot-color-var-global-theme-color-text-decoration-underline-text-underline-offset-0-12em-quot-is-public",
+          title: 'Our work [A Structure-Agnostic Multi-Objective Evolutionary Weight-Sharing Compression Framework for Deep Neural Networks]({%...',
+          description: "",
+          section: "News",},{id: "projects-block-differential-evolution",
+          title: 'Block Differential Evolution',
+          description: "Differential evolution for large-scale global optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/block-differential-evolution/";
+            },},{id: "projects-clustering-center-based-differential-evolution",
+          title: 'Clustering Center-based Differential Evolution',
+          description: "Center-based sampling for differential evolution.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/clustering-center-based-differential-evolution/";
+            },},{id: "projects-curvebench",
+          title: 'CurveBench',
+          description: "Watch how MLPs learn 1D curves. Width, optimizer, and activation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/curvebench/";
+            },},{id: "projects-brock-presentation-template",
+          title: 'Brock Presentation Template',
+          description: "The &quot;Brock University Presentation Slides Template in LaTeX&quot; project aims to develop a professional, standardized template for creating presentation slides using LaTeX. This template is tailored specifically for Brock University, incorporating the university&#39;s branding elements such as colors, logos, and typography.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-brock-presentation-template/";
+            },},{id: "projects-cbs-theory",
+          title: 'Cbs Theory',
+          description: "GitHub repository for cbs-theory.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cbs-theory/";
+            },},{id: "projects-ccde-wcci2022",
+          title: 'CCDE-WCCI2022',
+          description: "Source code of the Clustering Center-based Differential Evolution algorithm for CEC&#39;2017 bound-constrained optimization benchmarks.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-ccde-wcci2022/";
+            },},{id: "projects-cec2013lsgo",
+          title: 'cec2013lsgo',
+          description: "Pure-Python CEC&#39;2013 Large-Scale Global Optimization benchmark implementation with arbitrary-dimensional, seed-based benchmark generation.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-cec2013lsgo/";
+            },},{id: "projects-clustering-center-based",
+          title: 'Clustering Center Based',
+          description: "GitHub repository for clustering-center-based.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-clustering-center-based/";
+            },},{id: "projects-deepfeaturebarcodingcga",
+          title: 'DeepFeatureBarcodingCGA',
+          description: "GitHub repository for DeepFeatureBarcodingCGA.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-deep-feature-barcoding-cga/";
+            },},{id: "projects-drawopt-mern",
+          title: 'Drawopt Mern',
+          description: "GitHub repository for drawopt-mern.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-drawopt-mern/";
+            },},{id: "projects-efun-city-of-toronto",
+          title: 'Efun City Of Toronto',
+          description: "City of Toronto efun course registration bot written with Python Selenium",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-efun-city-of-toronto/";
+            },},{id: "projects-evonas",
+          title: 'EvoNAS',
+          description: "GitHub repository for EvoNAS.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-nas/";
+            },},{id: "projects-evosubspaceoptimization",
+          title: 'EvoSubspaceOptimization',
+          description: "GitHub repository for EvoSubspaceOptimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evo-subspace-optimization/";
+            },},{id: "projects-evokge",
+          title: 'Evokge',
+          description: "GitHub repository for evokge.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evokge/";
+            },},{id: "projects-evonn",
+          title: 'Evonn',
+          description: "GitHub repository for evonn.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-evonn/";
+            },},{id: "projects-mo-raul",
+          title: 'MO-RAUL',
+          description: "GitHub repository for MO-RAUL.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-raul/";
+            },},{id: "projects-mo-vae",
+          title: 'MO-VAE',
+          description: "GitHub repository for MO-VAE.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-mo-vae/";
+            },},{id: "projects-torchjd",
+          title: 'torchjd',
+          description: "A PyTorch library for Jacobian descent that supports optimization of neural networks with multiple losses.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/github-torchjd/";
+            },},{id: "projects-ranking-center-based-nsga-ii",
+          title: 'Ranking Center-based NSGA-II',
+          description: "Center-based sampling for multi-objective optimization.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ranking-center-based-nsga-ii/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-spring-2026/";
+            },},{id: "teachings-cosc-1p03-data-structures",
+          title: 'COSC 1P03, Data Structures',
+          description: "Graduate teaching assistantship for Data Structures at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-1p03-data-structures-winter-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2024/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-fall-2025/";
+            },},{id: "teachings-cosc-3p71-artificial-intelligence",
+          title: 'COSC 3P71, Artificial Intelligence',
+          description: "Graduate teaching assistantship for Artificial Intelligence at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-3p71-artificial-intelligence-spring-2025/";
+            },},{id: "teachings-cosc-4p86-machine-learning",
+          title: 'COSC 4P86, Machine Learning',
+          description: "Graduate teaching assistantship for Machine Learning at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p86-machine-learning-winter-2025/";
+            },},{id: "teachings-cosc-4p96-topics-in-computational-intelligence",
+          title: 'COSC 4P96, Topics in Computational Intelligence',
+          description: "Instructor for an undergraduate computational intelligence course at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/cosc-4p96-topics-in-computational-intelligence/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2024/";
+            },},{id: "teachings-engr-1p01-fundamentals-of-engineering-design",
+          title: 'ENGR 1P01, Fundamentals of Engineering Design',
+          description: "Graduate teaching assistantship for Fundamentals of Engineering Design at Brock University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/engr-1p01-fundamentals-of-engineering-design-fall-2025/";
+            },},{id: "teachings-designing-algorithms",
+          title: 'Designing Algorithms',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-designing-algorithms-fall-2022/";
+            },},{id: "teachings-machine-learning-and-data-mining",
+          title: 'Machine Learning and Data Mining',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-machine-learning-and-data-mining-winter-2023/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2022/";
+            },},{id: "teachings-object-oriented-programming",
+          title: 'Object-Oriented Programming',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-object-oriented-programming-fall-2023/";
+            },},{id: "teachings-principles-of-software-and-requirements-engineering",
+          title: 'Principles of Software and Requirements Engineering',
+          description: "Teaching assistantship at Ontario Tech University.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/ontario-tech-principles-of-software-and-requirements-engineering-winter-2023/";
+            },},{
+        id: 'social-cv',
+        title: 'CV',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://drive.google.com/file/d/1z59BNO_xWdBsY1VHJtyEfHS21EHUWghr/view?usp=sharing", "_blank");
+        },
+      },{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%72%6B%68%6F%73%72%6F%77%73%68%61%68%6C%69@%62%72%6F%63%6B%75.%63%61", "_blank");
+        },
+      },{
+        id: 'social-scholar',
+        title: 'Google Scholar',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://scholar.google.com/citations?user=yvSevxQAAAAJ", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0000-0002-5130-8203", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/rkhosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-leetcode',
+        title: 'LeetCode',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://leetcode.com/u/Rasak/", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/rasa-khosrowshahi", "_blank");
+        },
+      },{
+        id: 'social-x',
+        title: 'X',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://twitter.com/rkhosrowshahli", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
