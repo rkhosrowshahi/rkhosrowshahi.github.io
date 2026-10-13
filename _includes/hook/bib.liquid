@@ -1,0 +1,35 @@
+{% comment %}
+  Site hook for al_folio_core's bib.liquid. It runs after the venue text (entrytype) is assembled
+  and before ", <month> <year>" is appended, so it can reshape the venue line of each publication:
+  - Conference papers: no "In" prefix, and "Venue Year" without a comma.
+  - Theses: the degree before the school.
+  - An additional_info that already names the year (e.g. "Accepted ... at Canadian AI 2026"):
+    the year is not repeated and no trailing period is left.
+{% endcomment %}
+{%- capture year_text -%}{{ entry.year }}{%- endcapture -%}
+{%- comment -%} additional_info arrives with a trailing newline that would render as " , <year>". {%- endcomment -%}
+{%- assign entrytype = entrytype | strip -%}
+{%- if entry.type == 'inproceedings' or entry.type == 'incollection' -%}
+  {%- assign entrytype = entrytype | replace_first: '<em>In ', '<em>' -%}
+  {%- if entryyear != '' -%}
+    {%- capture entrytype -%}{{ entrytype }}{{ entrymonth }}{{ entryyear }}{%- endcapture -%}
+    {%- assign entrymonth = '' -%}
+    {%- assign entryyear = '' -%}
+  {%- endif -%}
+{%- elsif entry.type == 'mastersthesis' -%}
+  {%- capture entrytype -%}Master's Thesis, {{ entrytype }}{%- endcapture -%}
+{%- elsif entry.type == 'phdthesis' -%}
+  {%- capture entrytype -%}PhD Thesis, {{ entrytype }}{%- endcapture -%}
+{%- elsif entry.additional_info and entryyear != '' -%}
+  {%- assign venue_text = entrytype | strip_html | strip -%}
+  {%- if venue_text contains year_text -%}
+    {%- assign entrytype = entrytype | strip -%}
+    {%- assign last_char = entrytype | slice: -1 -%}
+    {%- if last_char == '.' -%}
+      {%- assign keep = entrytype | size | minus: 1 -%}
+      {%- assign entrytype = entrytype | slice: 0, keep -%}
+    {%- endif -%}
+    {%- assign entrymonth = '' -%}
+    {%- assign entryyear = '' -%}
+  {%- endif -%}
+{%- endif -%}

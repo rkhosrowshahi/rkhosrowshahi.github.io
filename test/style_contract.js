@@ -61,8 +61,12 @@ if (/gem 'al_math',\s*:git =>/.test(gemfile)) {
   failures.push("`Gemfile` must not use git-branch pin for `al_math`; use released gem version.");
 }
 
+// al_folio_core includes site hooks from `_includes/hook/` on purpose (e.g. `hook/bib.liquid`),
+// so an `_includes` folder holding only `hook/` does not override any gem-owned component.
+const onlyThemeHooks = (relPath) => fs.readdirSync(path.join(root, relPath)).every((name) => name === "hook");
+
 for (const forbiddenPath of ["_includes", "_layouts", "_sass", "_scripts", "assets/tailwind", "tailwind.config.js", "assets/webfonts"]) {
-  if (exists(forbiddenPath)) {
+  if (exists(forbiddenPath) && !(forbiddenPath === "_includes" && onlyThemeHooks(forbiddenPath))) {
     failures.push(`Starter must not own core component path \`${forbiddenPath}\`; move ownership to the corresponding gem.`);
   }
 }
